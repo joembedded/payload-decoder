@@ -1,14 +1,12 @@
-# Chirpstack Payload Decoder
+# Chirpstack Payload Decoder entwickeln
 
-Für LoRaWAN (speziell Chirpstack) einen Payload-Decoder in JS zu bauen, geht am einfachsten
-mit dem Chrome-Debugger. 
+Einfacher Payload-Decoder für die LTX-Logger in JavaScript für LoRaWAN (speziell Chirpstack). Dieser Decoder kann direkt in der Chrome-Debugger-Konsole getestet werden.
 
-Chirpstack verwendet QuickJS zum ausführen des Decoders. Da Chirpstack bereits im Portal (bei den Metriken)
-ein paar Info-Grafiken zeigen kann, lohnt sich das doppelt: Die decodierten Daten ("data") werden als "object" mit aufgenommen.
-Die automatische Metrik bietet alle darin enthaltenen Variablen zur Anzeige an. Tiefen-Level, werden dabei via '_'
-dargestellt, bsp.: aus: 
+## Bonus
+Chirpstack verwendet QuickJS, um Decoder auszuführen. Die decodierten Daten (`data`) werden als Objekt gespeichert und können z.B. auch direkt für Metriken verwendet werden. Dies ermöglicht eine einfache Visualisierung der Daten im Chirpstack-Portal.
 
-```
+### Beispiel für decodierte Daten
+```json
 {
   "data": {
     "chan_0": {
@@ -17,36 +15,52 @@ dargestellt, bsp.: aus:
   }
 }
 ```
+Die Variable `chan_0_value` wird automatisch für Metriken verfügbar gemacht.
 
-würde dann die Variable 'chan_0_value'.
+---
 
-### QuickJS - Laufzeit-Decoders
-QuickJS: https://bellard.org/quickjs/ und https://github.com/bellard/quickjs
+## QuickJS - Laufzeit-Decoder
+QuickJS ist ein leichtgewichtiger JavaScript-Interpreter, der plattformübergreifend funktioniert. Mehr Informationen:
+- [QuickJS Website](https://bellard.org/quickjs/)
+- [QuickJS GitHub](https://github.com/bellard/quickjs)
 
-Total abgefahren ist, dass man die Cosmo-QuickJS-Binaries auf allen Plattformen 
-laufen lassen kann (Auf Windows dazu einfach qjs in "EXE" umbenennen und voila: Interpreter fertig!, 
-die anderen Files können gelöscht werden)
-(Das Ganze, dank Cosmoolitan: https://github.com/jart/cosmopolitan )
+### QuickJS auf Windows nutzen
+1. Umbenennen (aus dem Quick-JS-Cosmo-Binarie) `qjs` in `qjs.exe`
+2. Die anderen Dateien können gelöscht werden.
+3. Fertig! Der Interpreter ist einsatzbereit.
 
-Genial! 
+### Cosmopolitan
+Dank [Cosmopolitan](https://github.com/jart/cosmopolitan) können QuickJS-Binaries auf allen Plattformen ausgeführt werden.
 
-- Testen dann ganze einfach mit Chrome,
-- Lokal ausfuehren mit: './qjs paysdi.js'
-- Den unteren Teil ('TESTBEREICH') entfernen un bei Chirpstack speichern.
-- Bei Laufzeit-Fehlern generiert CHirpstack einen ERROR-Event
+---
 
-#### Das ist der Template-Vorschlag von ChirpStack:
+## Testen des Decoders
+- **Mit Chrome:** Über die Chrome-Debugger-Konsole.
+- **Lokal ausführen:** Via Befehl:
+  ```bash
+  ./qjs paysdi.js
+  ```
+- **Hinweis:** Unteren Teil des Scripts (`TESTBEREICH`) entfernen, bevor im Chirpstack gespeichert wird.
 
+### Fehlerbehandlung
+Bei Laufzeitfehlern generiert Chirpstack automatisch einen `ERROR`-Event.
+
+---
+
+## Chirpstack Decoder-Template
+Hier ist das Standard-Template für Chirpstack:
+
+### Decode Uplink Function
 ```javascript
 // Decode uplink function.
 //
-// Input is an object with the following fields:
-// - bytes = Byte array containing the uplink payload, e.g. [255, 230, 255, 0]
-// - fPort = Uplink fPort.
-// - variables = Object containing the configured device variables.
+// Input:
+// - bytes: Byte-Array mit dem Uplink-Payload, z. B. [255, 230, 255, 0]
+// - fPort: Uplink fPort.
+// - variables: Objekt mit den konfigurierten Gerätevariablen.
 //
-// Output must be an object with the following fields:
-// - data = Object representing the decoded payload.
+// Output:
+// - data: Objekt, das den decodierten Payload repräsentiert.
 function decodeUplink(input) {
     return {
         data: {
@@ -55,18 +69,21 @@ function decodeUplink(input) {
     };
 }
 
+
 // Encode downlink function.
 //
-// Input is an object with the following fields:
-// - data = Object representing the payload that must be encoded.
-// - variables = Object containing the configured device variables.
+// Input:
+// - data: Objekt, das den zu codierenden Payload repräsentiert.
+// - variables: Objekt mit den konfigurierten Gerätevariablen.
 //
-// Output must be an object with the following fields:
-// - bytes = Byte array containing the downlink payload.
+// Output:
+// - bytes: Byte-Array mit dem Downlink-Payload.
 function encodeDownlink(input) {
     return {
         bytes: [225, 230, 255, 0]
     };
 }
 ```
-***
+
+---
+
