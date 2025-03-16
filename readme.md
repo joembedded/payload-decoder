@@ -1,12 +1,12 @@
-### Chirpstack Payload Decoder
+# Chirpstack Payload Decoder
 
 Für LoRaWAN (speziell Chirpstack) einen Payload-Decoder in JS zu bauen, geht am einfachsten
-mit dem Chrom-Debugger. 
+mit dem Chrome-Debugger. 
 
 Chirpstack verwendet QuickJS zum ausführen des Decoders. Da Chirpstack bereits im Portal (bei den Metriken)
 ein paar Info-Grafiken zeigen kann, lohnt sich das doppelt: Die decodierten Daten ("data") werden als "object" mit aufgenommen.
 Die automatische Metrik bietet alle darin enthaltenen Variablen zur Anzeige an. Tiefen-Level, werden dabei via '_'
-dargestellt, bsp.: aus 
+dargestellt, bsp.: aus: 
 
 ```
 {
@@ -18,9 +18,9 @@ dargestellt, bsp.: aus
 }
 ```
 
-würde dann 'chan_0_value'.
+würde dann die Variable 'chan_0_value'.
 
-# QuickJS - Entwickeln des Decoders
+### QuickJS - Laufzeit-Decoders
 QuickJS: https://bellard.org/quickjs/ und https://github.com/bellard/quickjs
 
 Total abgefahren ist, dass man die Cosmo-QuickJS-Binaries auf allen Plattformen 
@@ -35,7 +35,7 @@ Genial!
 - Den unteren Teil ('TESTBEREICH') entfernen un bei Chirpstack speichern.
 - Bei Laufzeit-Fehlern generiert CHirpstack einen ERROR-Event
 
-# Das ist der Template-Vorschlag von ChirpStack:
+#### Das ist der Template-Vorschlag von ChirpStack:
 
 ```javascript
 // Decode uplink function.
@@ -69,4 +69,4 @@ function encodeDownlink(input) {
     };
 }
 ```
-
+***
