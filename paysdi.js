@@ -1,14 +1,14 @@
 /* LTX Chirpstack Payload Decoder V0.1 - toTest */
 
 function decodeUplink(input) {
-    const data = input.bytes;
+    const indata = input.bytes;
     const decoded = {};
     let cursor = 0;
 
     switch (input.fPort) {
         case 1:        // fPort 1: Standard
             // Byte 0: Hello-Flags
-            const flags = data[cursor++];
+            const flags = indata[cursor++];
             let ftext = "";
             if (flags & 128) ftext += "(RESET)";
             if (flags & 64) ftext += "(ALARM)";
@@ -29,17 +29,17 @@ function decodeUplink(input) {
             decoded.flags = ftext;
             decoded.reason = reatext;
 
-            while (cursor < data.length) {
+            while (cursor < indata.length) {
                 // Read channel number (1 byte)
-                const channel = data[cursor++];
+                const channel = indata[cursor++];
                 if (channel <= 89) { // #0..89: Std-Channels
                     // Read IEEE 754 float (4 bytes, Big-Endian)
-                    const floatBytes = data.slice(cursor, cursor + 4);
+                    const floatBytes = indata.slice(cursor, cursor + 4);
                     const fdata = bytesToLTXFloat(floatBytes);
                     cursor += 4;
                     decoded[`chan_${channel}`] = fdata;
                 } else if (channel <= 99) { //#90..99: HK
-                    const hkdata = value2HK(channel, data[cursor] << 8 | data[cursor + 1]);
+                    const hkdata = value2HK(channel, indata[cursor] << 8 | indata[cursor + 1]);
                     cursor += 2;
                     decoded[`hk_${channel}`] = hkdata;
                 }
