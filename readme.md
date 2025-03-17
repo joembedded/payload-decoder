@@ -100,7 +100,7 @@ Das Ergebnis hängt an den Event an:
 
 Im Chirpstack wird dies wie folgt erkannt:
 
-![Device Metrics](../img/varmap.png)
+![Device Metrics](./img/varmap.png)
 
 ---
 
