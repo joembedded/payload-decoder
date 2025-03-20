@@ -106,7 +106,7 @@ Mehr Infos zu QuickJS:
   ```bash
   ./qjs payload_ltx.js
   ```
-- **Hinweis:** Testbereich vor dem Einsatz in Chirpstack entfernen.
+- **Hinweis:** Testbereich (bis `--- TEST-CONSOLE ---`) vor dem Einsatz in Chirpstack (oder auch TTN) entfernen.
 
 ---
 
