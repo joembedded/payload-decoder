@@ -1,146 +1,118 @@
-# Chirpstack Payload Decoder Entwicklung
+# Chirpstack LTX Payload Decoder
 
-Ein einfacher Payload-Decoder für die LTX-Logger in JavaScript für LoRaWAN (speziell Chirpstack). Dieser Decoder kann direkt in der Chrome-Debugger-Konsole getestet werden.
+## Überblick
 
-Chirpstack verwendet QuickJS, um Decoder auszuführen. Die decodierten Daten (`data`) werden als Objekt `object` gespeichert und können z. B. direkt im Portal verwendet werden. Dies ermöglicht eine einfache Visualisierung der Daten im Chirpstack-Portal.
+Payload-Decoder gelten oft als kompliziert – und das nicht ohne Grund. In der Welt von LoRaWAN zählt jedes Byte, denn der Energieverbrauch steigt mit der Länge der übertragenen Daten. Ziel ist es daher, mit minimalem Speicheraufwand möglichst viele Informationen zu transportieren. Doch die Vielzahl an Umrechnungsverfahren und das Fehlen standardisierter Fehlermeldungen machen die Dekodierung oft unübersichtlich und fehleranfällig.  
+
+Ein Beispiel: Eine Temperatur lässt sich effizient als 16-Bit-Integer mit Skalierung übertragen. Dasselbe Format könnte auch für eine Batteriespannung genutzt werden – doch hier wäre eine völlig andere Skalierung erforderlich. Einheitliche Fehlercodes lassen sich in solchen festen Formaten kaum umsetzen.  
+
+In der Praxis genügt für viele Messwerte – etwa Temperaturen, Feuchtigkeiten oder Distanzen – eine Genauigkeit von 0,05 %. Die LTX-Logger setzen daher auf 16-Bit-Gleitkommazahlen, um eine einheitliche Darstellung zu gewährleisten. Ein zusätzlicher Vorteil: Fehlercodes lassen sich verlustfrei integrieren, indem der reservierte "NaN"-Bereich von Gleitkommazahlen genutzt wird.  
+
+Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gleitkommazahlen zum Einsatz. So bleibt die Datenübertragung effizient, ohne auf Präzision zu verzichten.  
+
+## Highlights des LTX Payload Decoders
+
+- **Messwerte als Fließkommazahlen** (wahlweise **16-Bit oder 32-Bit** je nach Genauigkeitsanforderung).
+- **Strukturierte Messwerte als Array**, erleichtert die automatisierte Verarbeitung.
+- **Klartext-Fehlermeldungen**, z. B. bei Sensorausfällen.
+- **Trennung von Messwerten und Systemdaten** (*Housekeeping-Werte* wie z.B. Batteriespannung).
+- **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
 
 ---
 
-## Beispiel für decodierte Daten
+## Installation und Test
 
+Der Decoder enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in Chirpstack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
+
+- **Fehlermeldungen:** Chirpstack generiert automatisch `ERROR`-Events bei Laufzeitfehlern.
+
+---
+
+## Decodierte Datenstruktur
+
+Das erste Byte enthält **Flags und Reason Codes**:
+- **Flags:** Signalisiert Reset, Alarmstatus oder Dummy-Daten.
+- **Reason Code:** Gibt den Übertragungsgrund an (z. B. automatisch oder manuell ausgelöst).
+
+**Datenfelder:**
+- `chans`: Enthält die Mess- und Housekeeping-Kanäle (HK).
+- **Messkanäle (0 - 89):** Sensordaten.
+- **Housekeeping-Kanäle (90 - 99):** Systemdaten (Batteriestatus, etc.).
+
+### Beispiel einer decodierten Payload:
 ```json
 {
-  "data": {
-    "chan_0": {
-      "value": 18.15998077392578
-    }
-  }
+    "flags": "(Alarm)(Measure)",       // flags: B7:(Reset) B6:(Alarm) B5:(oldAlarm) B4:(Measure)
+    "reason": "(Auto)",                // reados: B0-B3, only used 1:(Auto) and 5:(Manual)
+    "chans": [
+      {
+        "channel": 0,                  // Kanäel 0 - 89 sind Messkanäle
+        "value": 20.5625,              // Hier sind 3 Messkanäle vorhanden
+        "prec": "F16"                  // Typ des Kanals, aktuell "F16" oder "F32"
+      },
+      {
+        "channel": 2,
+        "value": 18.57,
+        "prec": "F32"
+      },
+      {
+        "channel": 15,
+        "msg": "NoReply"               // Entweder ist "value" oder, wie hier, "msg" vorhanden
+      },
+      {
+        "channel": 93,                 // Kanäle ab 90 sind HK-Kanäle      
+        "desc": "HK_usedEnergy(mAh)",  // da deren Zuordnung fix ist: Beschreibung mit Einheit
+        "value": 0.334717,             // Bei Fehlern "msg" anstelle von "value", wie oben
+        "prec": "F16"                  // Typ für HK ist immer "F16"
+      }
+    ]
 }
 ```
 
-Die Variable `chan_0_value` wird automatisch für Metriken verfügbar gemacht.
-
 ---
 
-## QuickJS - Laufzeit-Decoder
+## Weiterführende Informationen
 
-QuickJS ist ein leichtgewichtiger JavaScript-Interpreter, der plattformübergreifend funktioniert. Mehr Informationen:
+Der **LTX Payload Decoder** ist kompatibel mit gängigen LoRaWAN-Stacks und kann direkt in der **Browser-Debugger-Konsole** getestet werden.
 
+- **Chirpstack:** Nutzt intern *QuickJS* für die Decodierung.
+- **QuickJS:** Leichtgewichtiger JavaScript-Interpreter, lauffähig unter Windows, Linux & macOS.
+- **Testen mit QuickJS:**
+  ```bash
+  ./qjs payload_ltx.js
+  ```
+
+Mehr Infos zu QuickJS:
 - [QuickJS Website](https://bellard.org/quickjs/)
 - [QuickJS GitHub](https://github.com/bellard/quickjs)
 
-### QuickJS auf Windows nutzen
+---
 
-1. Quick-JS-*Cosmo*-Binaries von der [QuickJS Website](https://bellard.org/quickjs/) herunterladen.
-2. Entpacken ins Projektverzeichnis und die Datei `qjs` in `qjs.exe` umbenennen.
-3. Die anderen Dateien können gelöscht werden.
-4. Fertig! Der Interpreter ist einsatzbereit.
+## QuickJS unter Windows nutzen
 
-### Cosmopolitan
-
-Dank [Cosmopolitan](https://github.com/jart/cosmopolitan) können QuickJS-Binaries auf allen Plattformen ausgeführt werden.
+1. QuickJS-*Cosmo*-Binaries von der [QuickJS Website](https://bellard.org/quickjs/) herunterladen.
+2. Entpacken und `qjs` in `qjs.exe` umbenennen.
+3. Zusätzliche Dateien löschen.
+4. Fertig! QuickJS ist einsatzbereit.
 
 ---
 
 ## Testen des Decoders
 
-- **Mit Chrome:** Über die Chrome-Debugger-Konsole.
-- **Lokal ausführen:** Via Befehl:
+- **Im Chrome-Debugger:** Datei `index.html` öffnen.
+- **Lokal in der Konsole:**
   ```bash
-  ./qjs paysdi.js
+  ./qjs payload_ltx.js
   ```
-- **Hinweis:** Den unteren Teil des Scripts (`TESTBEREICH`) entfernen, bevor es im Chirpstack gespeichert wird.
-
-### Fehlerbehandlung
-
-Bei Laufzeitfehlern generiert Chirpstack automatisch einen `ERROR`-Event.
+- **Hinweis:** Testbereich vor dem Einsatz in Chirpstack entfernen.
 
 ---
 
-## Beispiel
+## Sponsoren
 
-Zum schnellen Testen: `wrk.js`:
+### Unterstützt von
 
-```javascript
-function decodeUplink(input) {
-    let chans = [];
-    
-    chans.push({ name: "Temp0(°C)", value: 10.3 });
-    chans.push({ name: "Temp1(°C)", value: 21.5 });
-    chans.push({ name: "Temp2(°C)", value: 12.88 });
-    chans.push({ name: "Battery(V)", value: 3.21 });
-    chans.push({ name: "Device(°C)", value: -17.22 });
-    
-    return {
-        data: {
-            reason: "(MANUAL)",
-            flags: "ALARM",
-            chans
-        }
-    };
-};
-```
+![TERRA_TRANSFER](./docu/sponsors/TerraTransfer.jpg "TERRA_TRANSFER")
 
-Das Ergebnis hängt an den Event an:
+[TerraTransfer GmbH, Bochum, Germany](https://www.terratransfer.org)
 
-```javascript
-// ...
-"object": {
-    "chans": [
-        { "value": 10.3, "name": "Temp0(°C)" },
-        { "name": "Temp1(°C)", "value": 21.5 },
-        { "value": 12.88, "name": "Temp2(°C)" },
-        { "name": "Battery(V)", "value": 3.21 },
-        { "name": "Device(°C)", "value": -17.22 }
-    ],
-    "reason": "(MANUAL)",
-    "flags": "ALARM"
-}, // ...
-```
-
-Im Chirpstack wird dies wie folgt erkannt:
-
-![Device Metrics](./img/varmap.png)
-
----
-
-## Chirpstack Decoder-Template
-
-Hier ist das Standard-Template für Chirpstack:
-
-### Decode Uplink/Downlink Function
-
-```javascript
-// Decode uplink function.
-//
-// Input:
-// - bytes: Byte-Array mit dem Uplink-Payload, z. B. [255, 230, 255, 0]
-// - fPort: Uplink fPort.
-// - variables: Objekt mit den konfigurierten Gerätevariablen.
-//
-// Output:
-// - data: Objekt, das den decodierten Payload repräsentiert.
-function decodeUplink(input) {
-    return {
-        data: {
-            temp: 22.5
-        }
-    };
-}
-
-// Encode downlink function.
-//
-// Input:
-// - data: Objekt, das den zu codierenden Payload repräsentiert.
-// - variables: Objekt mit den konfigurierten Gerätevariablen.
-//
-// Output:
-// - bytes: Byte-Array mit dem Downlink-Payload.
-function encodeDownlink(input) {
-    return {
-        bytes: [225, 230, 255, 0]
-    };
-}
-```
-
----
