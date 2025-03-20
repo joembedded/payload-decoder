@@ -22,7 +22,9 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 
 ## Installation und Test
 
-Der Decoder enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in Chirpstack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
+Der Decoder (`payload_ltx.js`) enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in Chirpstack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
+
+Dann einfach diesen oberen Teil als **CODEC** im Chirpstack (oder auch TTN) abspeichern.
 
 - **Fehlermeldungen:** Chirpstack generiert automatisch `ERROR`-Events bei Laufzeitfehlern.
 
@@ -40,7 +42,7 @@ Das erste Byte enthält **Flags und Reason Codes**:
 - **Housekeeping-Kanäle (90 - 99):** Systemdaten (Batteriestatus, etc.).
 
 ### Beispiel einer decodierten Payload:
-```json
+```javascript
 {
     "flags": "(Alarm)(Measure)",       // flags: B7:(Reset) B6:(Alarm) B5:(oldAlarm) B4:(Measure)
     "reason": "(Auto)",                // reados: B0-B3, only used 1:(Auto) and 5:(Manual)
