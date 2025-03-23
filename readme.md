@@ -12,7 +12,7 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 
 <p style="border-left: 3px solid yellow">
 Kleines Beispiel: In Europa können per LoRa 51 Bytes Payload sicher übertragen werden. Dies könnten mit dem LTX Payload Decoder z.B. sämtliche Messwerte einer 20-kanaligen Temperaturmesskette ("Thermistor-String") mit einer Auflösung von 5/1000 Grad im (Bereich +/- 10°C) inklusive von bis zu 4 Housekeeping-Kanäle (HK) (z.B. Batterie-Spannung, Energieverbrauch, Geräte-Temperatur und Geräte-Innenfeuchte) sein.
-</>
+</p>
 
 ## Highlights des LTX Payload Decoders
 
