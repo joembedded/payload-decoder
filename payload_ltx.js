@@ -1,18 +1,27 @@
 /* LTX Chirpstack Payload Decoder 
-* V1.0 (C) JoEmbedded.de 
+* V1.10 (C) JoEmbedded.de 
 * LTX uses a flexible, compressed format, see LTX-Documentation
-* using FLoat32 and Float16 on fPort 1 */
+* using FLoat32 and Float16 on fPort 1-199 */
 
 function decodeUplink(input) { // assume inpu is valid
-    switch (input.fPort) {
-        case 1:        // fPort 1: LTX Standard-Uplink
-            return { data: ltxDecode(input.bytes) }
-        default:
-            return { data: { error: `LTX: fPort:${input.fPort} unknown` } };
+    if ((input.fPort > 0) && (input.fPort < 200)) {
+        // fPort 1-199: LTX Standard-Uplink, Port defines 'known types'
+        return { data: ltxDecode(input.bytes, input.fPort) }
+    } else {
+        return { data: { error: `LTX: fPort:${input.fPort} unknown` } };
     }
 }
 
-function ltxDecode(indata) {
+// List of 'known types' with (opt. repeatet) units - LTX-Sensors
+const deftypes = {
+    10: ['°C'], // 10: All channels are Temperatures
+    11: ['%rH', '°C'], // 11: rH/T-Sensor
+    12: ['Bar', '°C'], // 12: Pressure/Level Sensor Bar
+    13: ['m', '°C'], // 13: Level Sensor m
+    14: ['m', 'dBm'], // 14: Distance(s) Sensor (Radar)
+}
+
+function ltxDecode(indata, port) {
     const decoded = {};
     // Byte 0: Hello-Flags for FLAGS and REASON
     let ianz = indata.length;
@@ -33,10 +42,11 @@ function ltxDecode(indata) {
     else if ((flags & 15) == 5) decoded.reason = "(Manual)";
     else decoded.reason = `(REASON:${flags & 15})`;
 
-    // Channels:0..89, HK:90..99(max 127) - Decodes V1.0 does not care extended itoks >= 128!
+    // Channels:0..89, HK:90..99(max 127) - Decoder V1.x does not care extended itoks >= 128!
     let ichan = 0;
+    const typeunits = deftypes[port]
+    let dtidx = 0;  // Index in deftypes
     decoded.chans = [];
-
     while (ianz-- > 0 && ichan < 127) {
         const itok = view.getUint8(cursor++);
         if (!(itok & 128)) {
@@ -49,21 +59,29 @@ function ltxDecode(indata) {
             }
             const f16 = itok & 64;
             while (cmanz-- > 0) {
+                const puob = { channel: ichan };
+                if (typeunits?.length > 0) { // Known Type with units
+                    puob.unit = typeunits[dtidx % (typeunits.length)];
+                }
                 if (!f16) { // Following cmanz Float32
                     if (ianz < 4) return { error: "LTX: Format(2) invalid" };
+                    puob.prec = "F32";
                     const u32 = view.getUint32(cursor, false); // Get Float32-Bits
-                    if ((u32 >>> 23) == 0x1FF) decoded.chans.push({ channel: ichan, msg: getLTXError(u32 & 0x7FFFFF) });
-                    else decoded.chans.push({ channel: ichan, value: parseFloat(view.getFloat32(cursor, false).toPrecision(8)) , prec: "F32" });
+                    if ((u32 >>> 23) == 0x1FF) puob.msg = getLTXError(u32 & 0x7FFFFF);
+                    else puob.value = parseFloat(view.getFloat32(cursor, false).toPrecision(8));
                     cursor += 4;
                     ianz -= 4;
                 } else { // Following cmanz Float16
                     if (ianz < 2) return { error: "LTX: Format(3) invalid" };
+                    puob.prec = "F16";
                     const u16 = view.getUint16(cursor, false); // Get Float16-Bits
-                    if ((u16 >>> 10) == 0x3F) decoded.chans.push({ channel: ichan, msg: getLTXError(u16 & 1023) });
-                    else decoded.chans.push({ channel: ichan, value: parseFloat(view.getFloat16(cursor, false)), prec: "F16" });
+                    if ((u16 >>> 10) == 0x3F) puob.msg = getLTXError(u16 & 1023);
+                    else puob.value = parseFloat(view.getFloat16(cursor, false));
                     cursor += 2;
                     ianz -= 2;
                 }
+                decoded.chans.push(puob);
+                dtidx++;
                 ichan++;
             }
         } else { // HK, channels 90.. 
@@ -73,9 +91,11 @@ function ltxDecode(indata) {
             while (cbits) {
                 if (cbits & 1) {
                     if (ianz < 2) return { error: "LTX: Format(4) invalid Data" };
+                    const puob = { channel: ichan, prec: "F16", unit: unitDescrHK(ichan) };
                     const u16 = view.getUint16(cursor, false); // Get Float16-Bits
-                    if ((u16 >>> 10) == 0x3F) decoded.chans.push({ channel: ichan, desc: descriptionHK(ichan), msg: getLTXError(u16 & 1023) });
-                    else decoded.chans.push({ channel: ichan, desc: descriptionHK(ichan), value: parseFloat(view.getFloat16(cursor, false)), prec: "F16" });
+                    if ((u16 >>> 10) == 0x3F) puob.msg = getLTXError(u16 & 1023);
+                    else puob.value = parseFloat(view.getFloat16(cursor, false));
+                    decoded.chans.push(puob);
                     cursor += 2;
                     ianz -= 2;
                 }
@@ -86,14 +106,14 @@ function ltxDecode(indata) {
     }
     return decoded;
 }
-// descHK - Description of HK-Channels
-function descriptionHK(ichan) {
+// descHK - Unit and Description of HK-Channels
+function unitDescrHK(ichan) {
     switch (ichan) {
-        case 90: return "HK_Bat(V)";
-        case 91: return "HK_intTemp(°C)";
-        case 92: return "HK_intHum.(%rH)";
-        case 93: return "HK_usedEnergy(mAh)";
-        case 94: return "HK_Baro(mBar)";
+        case 90: return "V (HK_Bat)";
+        case 91: return "°C (HK_intTemp)";
+        case 92: return "%rH (HK_intHum.)";
+        case 93: return "mAh (HK_usedEnergy)";
+        case 94: return "mBar (HK_Baro)";
         default: return "HK_unknown";
     }
 }
@@ -131,7 +151,7 @@ function testDecoder(hexString) {
     for (let i = 0; i < msg.length; i += 2) {
         testBytes.push(parseInt(msg.substring(i, i + 2), 16));
     }
-    const theObject = decodeUplink({ fPort: 1, bytes: testBytes });
+    const theObject = decodeUplink({ fPort: 11, bytes: testBytes });
     return JSON.stringify(theObject, null, 2);
 }
 
@@ -144,7 +164,7 @@ function main() {
         "15 01 41A4E148  9F 42A3 4DA8 5172 2B3F 63E8", // Manual, Value: 20.610001, HKs: 3.31836(V), 22.6250(°C), 43.5625(%), 0.0566101(mAh), 1012.00(mBar)
         "11 42 4D24 4CE4 01 41948F5C 88 355B", // Auto 2 Values(F16): 20.5625, 19.5625, Value(F32): 18.570000 , HK: 0.334717(mAh)
         "7142FC02FC0201FF800002884479", // Alarm, Auto, 3 Values: 'No Reply', HK: 4.47266(mAH)
-    ];1
+    ]; 1
 
     testmsg.forEach(e => {
         console.log("----Test-Payload:-----");

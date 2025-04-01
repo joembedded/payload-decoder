@@ -19,6 +19,7 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 
 - **Messwerte als Fließkommazahlen** (wahlweise **16-Bit oder 32-Bit** je nach Genauigkeitsanforderung).
 - **Strukturierte Messwerte als Array**, erleichtert die automatisierte Verarbeitung.
+- **Werte mit Einheiten**, die Einheiten der Sensoren werden ggf. übertragen
 - **Klartext-Fehlermeldungen**, z. B. bei Sensorausfällen.
 - **Trennung von Messwerten und Systemdaten** (*Housekeeping-Werte* wie z.B. Batteriespannung).
 - **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
@@ -36,6 +37,11 @@ Dann einfach diesen oberen Teil als **CODEC** im Chirpstack (oder auch TTN) absp
 ---
 
 ## Decodierte Datenstruktur
+
+Bei LoRaWAN werden existiert ein Feld `fPort` (1 - 223) in den übertragenen Daten.
+So liefert z.B. SDI-12 selbst zwar keine Information zu Einheiten der Kanäle, aber für LTX Gateways
+kann dies einfach eingestellt werden und beim Upload bestimmt `fPort` dann den Typ des Sensors,
+Z.B. definiert der Typ 11 einen Sensor mit nur einem, oder auch beliebig vielen Temperatur-/Feuchte-Werten.
 
 Das erste Byte enthält **Flags und Reason Codes**:
 - **Flags:** Signalisiert Reset, Alarmstatus oder Dummy-Daten.
@@ -55,20 +61,23 @@ Das erste Byte enthält **Flags und Reason Codes**:
       {
         "channel": 0,                  // Kanäel 0 - 89 sind Messkanäle
         "value": 20.5625,              // Hier sind 3 Messkanäle vorhanden
-        "prec": "F16"                  // Typ des Kanals, aktuell "F16" oder "F32"
+        "prec": "F16",                 // Typ des Kanals, aktuell "F16" oder "F32"
+        "unit": "°C"                   // Bei definierten Sensoren ist/sind Einheit(en) bekannt
       },
       {
         "channel": 2,
         "value": 18.57,
-        "prec": "F32"
+        "prec": "F32",
+        "unit": "°C"
       },
       {
         "channel": 15,
         "msg": "NoReply"               // Entweder ist "value" oder, wie hier, "msg" vorhanden
+        "unit": "m/sec"
       },
       {
         "channel": 93,                 // Kanäle ab 90 sind HK-Kanäle      
-        "desc": "HK_usedEnergy(mAh)",  // da deren Zuordnung fix ist: Beschreibung mit Einheit
+        "unit": "mAh (HK_usedEnergy)",  // da deren Zuordnung fix ist: Beschreibung mit Einheit
         "value": 0.334717,             // Bei Fehlern "msg" anstelle von "value", wie oben
         "prec": "F16"                  // Typ für HK ist immer "F16"
       }
