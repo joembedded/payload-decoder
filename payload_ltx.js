@@ -14,6 +14,7 @@ function decodeUplink(input) { // assume inpu is valid
 
 // List of 'known types' with (opt. repeatet) units - LTX-Sensors
 const deftypes = {
+    // 1-9 frei fuer 'Nix' oder Custom
     10: ['°C'], // 10: All channels are Temperatures
     11: ['%rH', '°C'], // 11: rH/T-Sensor
     12: ['Bar', '°C'], // 12: Pressure/Level Sensor Bar
