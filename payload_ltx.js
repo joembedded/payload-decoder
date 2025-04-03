@@ -1,5 +1,5 @@
 /* LTX Chirpstack Payload Decoder 
-* V1.10 (C) JoEmbedded.de 
+* V1.12 (C) JoEmbedded.de 
 * LTX uses a flexible, compressed format, see LTX-Documentation
 * using FLoat32 and Float16 on fPort 1-199 */
 
@@ -39,9 +39,10 @@ function ltxDecode(indata, port) {
     else if (flags & 32) decoded.flags += "(old Alarm)";
     if (flags & 16) decoded.flags += "(Measure)";
 
-    if ((flags & 15) == 1) decoded.reason = "(Auto)";
-    else if ((flags & 15) == 5) decoded.reason = "(Manual)";
-    else decoded.reason = `(REASON:${flags & 15})`;
+    const reason = flags & 15;
+    if (reason === 1) decoded.reason = "(Auto)";
+    else if (reason === 3 || reason === 5) decoded.reason = "(Manual)"; 
+    else decoded.reason = `(Reason:${reason}?)`;
 
     // Channels:0..89, HK:90..99(max 127) - Decoder V1.x does not care extended itoks >= 128!
     let ichan = 0;
