@@ -17,7 +17,7 @@ Only where higher resolution is explicitly required 32-bit floating point number
 - **Measurement values as floating point numbers** (either **16-bit or 32-bit**, depending on accuracy requirements).
 - **Structured measurement values as an array**, making automated processing easier.
 - **Values with units**, as sensor units are transmitted if applicable.
-- **Plain-text error messages**, e.g., for sensor failures.
+- **Plain-text error messages**, e.g. for sensor errors.
 - **Separation of measurement values and system data** (*housekeeping values (HK)* such as battery voltage).
 - **Minimal storage requirement**, optimized for LoRaWAN or satellite communication.
 
