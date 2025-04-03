@@ -1,68 +1,64 @@
 # Chirpstack LTX Payload Decoder
 
-## Überblick
+## Overview
 
-Payload-Decoder gelten oft als kompliziert – und das nicht ohne Grund. In der Welt von LoRaWAN zählt jedes Byte, denn der Energieverbrauch steigt mit der Länge der übertragenen Daten. Ziel ist es daher, mit minimalem Speicheraufwand möglichst viele Informationen zu transportieren. Doch die Vielzahl an Umrechnungsverfahren und das Fehlen standardisierter Fehlermeldungen machen die Dekodierung oft unübersichtlich und fehleranfällig.  
+Payload decoders are often considered complex. And this for good reason. In the world of LoRaWAN, every byte counts, as energy consumption increases with the length of transmitted data. The goal is to transport as much information as possible with minimal storage overhead. However, the variety of conversion methods and the lack of standardized error messages often make decoding confusing and error-prone.
 
-Ein Beispiel: Eine Temperatur lässt sich effizient als 16-Bit-Integer mit Skalierung übertragen. Dasselbe Format könnte auch für eine Batteriespannung genutzt werden – doch hier wäre eine völlig andere Skalierung erforderlich. Einheitliche Fehlercodes lassen sich in solchen festen Formaten kaum umsetzen.  
+For example, a temperature value can be efficiently transmitted as a 16-bit integer with scaling. The same format could also be used for battery voltage—but here, a completely different scaling would be required. Implementing uniform error codes in such fixed formats is nearly impossible.
 
-In der Praxis genügt für viele Messwerte – etwa Temperaturen, Feuchtigkeiten oder Distanzen – eine Genauigkeit von 0,05 %. Die LTX-Logger setzen daher auf 16-Bit-Gleitkommazahlen, um eine einheitliche Darstellung zu gewährleisten. Ein zusätzlicher Vorteil: Fehlercodes lassen sich verlustfrei integrieren, indem der reservierte "NaN"-Bereich von Gleitkommazahlen genutzt wird.  
+In practice, an accuracy of 0.05% is sufficient for many measured values—such as temperatures, humidity, or distances. Therefore, LTX loggers use 16-bit floating point numbers to ensure a consistent representation. An additional advantage: error codes can be integrated without loss by utilizing the reserved "NaN" range of floating point numbers.
 
-Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gleitkommazahlen zum Einsatz. So bleibt die Datenübertragung effizient, ohne auf Präzision zu verzichten.  
+Only where higher resolution is explicitly required 32-bit floating point numbers are used. This keeps data transmission efficient without sacrificing precision.
 
-> Kleines Beispiel: In Europa können per LoRa 51 Bytes Payload sicher übertragen werden. Dies könnten mit dem LTX Payload Decoder
-> also sämtliche Messwerte einer 20-kanaligen, hochgenauen Temperaturmesskette ("Thermistor-String") mit einer Auflösung von 5/1000 Grad (im 
-> Bereich +/- 10°C) inklusive von bis zu 4 Housekeeping-Kanäle (HK) (z.B. Batteriespannung, Energieverbrauch, Geräte-Innentemperatur 
-> und -Innenfeuchte) sein.
+> Example: In Europe, LoRa can securely transmit 51 bytes of payload. With the LTX Payload Decoder, this could include all measurement values of a 20-channel high-precision temperature measurement chain ("thermistor string") with a resolution of 5/1000 degrees (in the range of +/- 10°C), along with up to 4 housekeeping (HK) channels (e.g., battery voltage, energy consumption, device internal temperature, and internal humidity).
 
-## Highlights des LTX Payload Decoders
+## Highlights of the LTX Payload Decoder
 
-- **Messwerte als Fließkommazahlen** (wahlweise **16-Bit oder 32-Bit** je nach Genauigkeitsanforderung).
-- **Strukturierte Messwerte als Array**, erleichtert die automatisierte Verarbeitung.
-- **Werte mit Einheiten**, die Einheiten der Sensoren werden ggf. übertragen
-- **Klartext-Fehlermeldungen**, z. B. bei Sensorausfällen.
-- **Trennung von Messwerten und Systemdaten** (*Housekeeping-Werte (HK)* wie z.B. Batteriespannung).
-- **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
+- **Measurement values as floating point numbers** (either **16-bit or 32-bit**, depending on accuracy requirements).
+- **Structured measurement values as an array**, making automated processing easier.
+- **Values with units**, as sensor units are transmitted if applicable.
+- **Plain-text error messages**, e.g., for sensor failures.
+- **Separation of measurement values and system data** (*housekeeping values (HK)* such as battery voltage).
+- **Minimal storage requirement**, optimized for LoRaWAN or satellite communication.
 
 ---
 
-## Installation und Test
+## Installation and Testing
 
-Der Decoder (`payload_ltx.js`) enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in Chirpstack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
+The decoder (`payload_ltx.js`) includes an integrated **test routine**, which can be executed in the browser or in the console. For use in Chirpstack or TTN, the **test section must be removed** (up to `--- TEST-CONSOLE ---`).
 
-Dann einfach diesen oberen Teil als **CODEC** im Chirpstack (oder auch TTN) abspeichern.
+Then, simply save this upper part as a **CODEC** in Chirpstack (or TTN).
 
-- **Fehlermeldungen:** Chirpstack generiert automatisch `ERROR`-Events bei Laufzeitfehlern.
+- **Error Messages:** Chirpstack automatically generates `ERROR` events for runtime errors.
 
 ---
 
-## Decodierte Datenstruktur
+## Decoded Data Structure
 
-Bei LoRaWAN werden existiert ein Feld `fPort` (1 - 223) in den übertragenen Daten.
-So liefert z.B. SDI-12 selbst zwar keine Information zu Einheiten der Kanäle, aber für LTX Gateways
-kann dies einfach eingestellt werden und beim Upload bestimmt `fPort` dann den Typ des Sensors,
-Z.B. definiert der `Typ 11` einen Sensor mit nur einem, oder auch beliebig vielen Temperatur-/Feuchte-Werten.
+LoRaWAN data includes a field called `fPort` (1 - 223).
+For example, SDI-12 itself does not provide information about channel units, but for LTX Gateways, this can be configured, and upon upload, `fPort` determines the sensor type.
+For example, `Type 11` defines a sensor with either a single or multiple temperature/humidity values.
 
-Das erste Byte enthält **Flags und Reason Codes**:
-- **Flags:** Signalisiert Reset, Alarmstatus oder Dummy-Daten.
-- **Reason Code:** Gibt den Übertragungsgrund an (z. B. automatisch oder manuell ausgelöst).
+The first byte contains **Flags and Reason Codes**:
+- **Flags:** Signals reset, alarm status, or dummy data.
+- **Reason Code:** Indicates the reason for transmission (e.g., automatic or manually triggered).
 
-**Datenfelder:**
-- `chans`: Enthält die Mess- und Housekeeping-Kanäle (HK).
-- **Messkanäle (0 - 89):** Sensordaten.
-- **Housekeeping-Kanäle (90 - 99):** Systemdaten (Batteriestatus, etc.).
+**Data Fields:**
+- `chans`: Contains measurement and housekeeping channels (HK).
+- **Measurement Channels (0 - 89):** Sensor data.
+- **Housekeeping Channels (90 - 99):** System data (battery status, etc.).
 
-### Beispiel einer decodierten Payload:
+### Example of a Decoded Payload:
 ```javascript
 {
     "flags": "(Alarm)(Measure)",       // flags: B7:(Reset) B6:(Alarm) B5:(oldAlarm) B4:(Measure)
-    "reason": "(Auto)",                // reados: B0-B3, only used 1:(Auto) and 5:(Manual)
+    "reason": "(Auto)",                // reasons: B0-B3, only used 1:(Auto) and 5:(Manual)
     "chans": [
       {
-        "channel": 0,                  // Kanäel 0 - 89 sind Messkanäle
-        "value": 20.5625,              // Hier sind 3 Messkanäle vorhanden
-        "prec": "F16",                 // Typ des Kanals, aktuell "F16" oder "F32"
-        "unit": "°C"                   // Bei definierten Sensoren ist/sind Einheit(en) bekannt
+        "channel": 0,                  // Channels 0 - 89 are measurement channels
+        "value": 20.5625,              // Three measurement channels are present here
+        "prec": "F16",                 // Channel type, currently "F16" or "F32"
+        "unit": "°C"                   // Defined sensors have known unit(s)
       },
       {
         "channel": 2,
@@ -72,87 +68,66 @@ Das erste Byte enthält **Flags und Reason Codes**:
       },
       {
         "channel": 15,
-        "msg": "NoReply"               // Entweder ist "value" oder, wie hier, "msg" vorhanden
+        "msg": "NoReply",               // Either "value" or "msg" is present
         "unit": "m/sec"
       },
       {
-        "channel": 93,                 // Kanäle ab 90 sind HK-Kanäle      
-        "unit": "mAh (HK_usedEnergy)",  // da deren Zuordnung fix ist: Beschreibung mit Einheit
-        "value": 0.334717,             // Bei Fehlern "msg" anstelle von "value", wie oben
-        "prec": "F16"                  // Typ für HK ist immer "F16"
+        "channel": 93,                 // Channels from 90 onwards are HK channels      
+        "unit": "mAh (HK_usedEnergy)",  // Fixed assignment: description with unit
+        "value": 0.334717,             // In case of errors, "msg" instead of "value"
+        "prec": "F16"                  // HK type is always "F16"
       }
     ]
 }
 ```
-Kompakte Darstellung:
-> - Der Gerätetyp (Einheiten) ist implizit in 'fPort' enthalten
+Compact representation:
+> - The device type (units) is implicitly contained in 'fPort'.
 >
-> - Erstes Byte: 
->   Obere 4 Bits: Flags: 
->    128: Geräte-Reset (wird einmalig übertragen)
->     64: Alarm in aktueller Messung (sofern Gerät Alarmgrenzen hat)
->     32: Alarm in früherer Messung (wie oben, falls Übertrgaungen zuvor gescheitert sind)
->     16: Messwerte anbei
+> - First byte:
+>   Upper 4 bits: Flags:
+>    128: Device reset (transmitted once)
+>     64: Alarm in current measurement (if the device has alarm thresholds)
+>     32: Alarm in previous measurement (if previous transmissions failed)
+>     16: Measurement values included
 >
->   Untere 4 Bits als Zahl: Grund der Übertragung
->      2: Automatische Übertragung
->      3: Übertragung wurde manuell ausgelöst
->      andere: reserviert
+>   Lower 4 bits as a number: Transmission reason
+>      2: Automatic transmission
+>      3: Manually triggered transmission
+>      Others: Reserved
 >
-> - Restliche Bytes (die Variable 'cursor' enthält den aktuellen Kanal (0-89, >= 90, startet bei 0)). 
->   Messwerte sind die Kanäle 0-89, >= 90-9 sind HK-Kanäle:
+> - Remaining bytes (the variable 'cursor' holds the current channel (0-89, >= 90, starting at 0)).
+>   Measurement values are channels 0-89; 90-99 are HK channels:
 >   
->   Blöcke aus 1 Byte Steuercode und 1 - xxxxxx Werte mal das Format Float16 oder Float32 oder cursor (1 Byte)
->    Steuercode (binär): 0Fxxxxxx 6 Bits Anzahl  F:0:Float32, F:1:Float16 xxxxxx: Anzahl Werte (0,1-31) folgend, bei 0: cursor folgt
->    Die Floats werden als "Big Endian" (IEEE 754) im übertragen und können alternativ auch einen Fehlercode darstellen
+>   Blocks consist of 1-byte control code and 1 - xxxxxx values in Float16 or Float32 format.
+>    Control code (binary): 0Fxxxxxx 6-bit count  F:0:Float32, F:1:Float16 xxxxxx: number of values (0,1-31) following; if 0: cursor follows.
+>    Floats are transmitted in "Big Endian" (IEEE 754) and can alternatively represent an error code.
 >    
->    Steuercode (binär): 1xxxxxxxx 7 Bits Maske leitet HK-Kanäle ein. HK beginnt immer bei 90, ggfs. wird der cursor hochgesetzt
->    Jedes Maksenbit steht für einen Kanal 1: enthalten, 0: überspringen. Die HK-Kanäle werden immer als Float16 übertragen.
+>    Control code (binary): 1xxxxxxxx 7-bit mask introduces HK channels. HK always starts at 90, cursor may be incremented.
+>    Each mask bit represents a channel: 1: included, 0: skipped. HK channels are always transmitted as Float16.
 
 ---
 
-## Weiterführende Informationen
+## Further Information
 
-Der **LTX Payload Decoder** ist kompatibel mit gängigen LoRaWAN-Stacks und kann direkt in der **Browser-Debugger-Konsole** getestet werden.
+The **LTX Payload Decoder** is compatible with common LoRaWAN stacks and can be tested directly in the **browser debugger console**.
 
-- **Chirpstack:** Nutzt intern *QuickJS* für die Decodierung.
-- **QuickJS:** Leichtgewichtiger JavaScript-Interpreter, lauffähig unter Windows, Linux & macOS.
-- **Testen mit QuickJS:**
+- **Chirpstack:** Uses *QuickJS* internally for decoding.
+- **QuickJS:** Lightweight JavaScript interpreter, runs on Windows, Linux & macOS.
+- **Testing with QuickJS:**
   ```bash
   ./qjs payload_ltx.js
   ```
 
-Mehr Infos zu QuickJS:
+More information about QuickJS:
 - [QuickJS Website](https://bellard.org/quickjs/)
 - [QuickJS GitHub](https://github.com/bellard/quickjs)
 
 ---
 
-## QuickJS unter Windows nutzen
+## Sponsors
 
-1. QuickJS-*Cosmo*-Binaries von der [QuickJS Website](https://bellard.org/quickjs/) herunterladen.
-2. Entpacken und `qjs` in `qjs.exe` umbenennen.
-3. Zusätzliche Dateien löschen.
-4. Fertig! QuickJS ist einsatzbereit.
-
----
-
-## Testen des Decoders
-
-- **Im Chrome-Debugger:** Datei `index.html` öffnen.
-- **Lokal in der Konsole:**
-  ```bash
-  ./qjs payload_ltx.js
-  ```
-- **Hinweis:** Testbereich (bis `--- TEST-CONSOLE ---`) vor dem Einsatz in Chirpstack (oder auch TTN) entfernen.
-
----
-
-## Sponsoren
-
-### Unterstützt von
+### Supported by
 
 ![TERRA_TRANSFER](./docu/sponsors/TerraTransfer.jpg "TERRA_TRANSFER")
 
 [TerraTransfer GmbH, Bochum, Germany](https://www.terratransfer.org)
-
