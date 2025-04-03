@@ -87,7 +87,7 @@ Das erste Byte enthält **Flags und Reason Codes**:
 Kompakte Darstellung:
 > - Der Gerätetyp (Einheiten) ist implizit in 'fPort' enthalten
 >
-> - 1. Byte: 
+> - Erstes Byte: 
 >   Obere 4 Bits: Flags: 
 >    128: Geräte-Reset (wird einmalig übertragen)
 >     64: Alarm in aktueller Messung (sofern Gerät Alarmgrenzen hat)
