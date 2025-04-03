@@ -41,7 +41,7 @@ Dann einfach diesen oberen Teil als **CODEC** im Chirpstack (oder auch TTN) absp
 Bei LoRaWAN werden existiert ein Feld `fPort` (1 - 223) in den übertragenen Daten.
 So liefert z.B. SDI-12 selbst zwar keine Information zu Einheiten der Kanäle, aber für LTX Gateways
 kann dies einfach eingestellt werden und beim Upload bestimmt `fPort` dann den Typ des Sensors,
-Z.B. definiert der Typ 11 einen Sensor mit nur einem, oder auch beliebig vielen Temperatur-/Feuchte-Werten.
+Z.B. definiert der `Typ 11` einen Sensor mit nur einem, oder auch beliebig vielen Temperatur-/Feuchte-Werten.
 
 Das erste Byte enthält **Flags und Reason Codes**:
 - **Flags:** Signalisiert Reset, Alarmstatus oder Dummy-Daten.
@@ -84,6 +84,30 @@ Das erste Byte enthält **Flags und Reason Codes**:
     ]
 }
 ```
+Kompakte Darstellung:
+> - Der Gerätetyp (Einheiten) ist implizit in 'fPort' enthalten
+>
+> - 1. Byte: 
+>   Obere 4 Bits: Flags: 
+>    128: Geräte-Reset (wird einmalig übertragen)
+>     64: Alarm in aktueller Messung (sofern Gerät Alarmgrenzen hat)
+>     32: Alarm in früherer Messung (wie oben, falls Übertrgaungen zuvor gescheitert sind)
+>     16: Messwerte anbei
+>
+>   Untere 4 Bits als Zahl: Grund der Übertragung
+>      1: Automatische Übertragung
+>      3: Übertragung wurde manuell ausgelöst
+>      5: wie 3 aber explizit nur Übertragung per LoRa
+>
+> - Restliche Bytes (die Variable 'cursor' enthält den aktuellen Kanal (0-89, >= 90, startet bei 0)). 
+>   Messwerte sind die Kanäle 0-89, >= 90-9 sind HK-Kanäle:
+>   
+>   Blöcke aus 1 Byte Steuercode und 1 - xxxxxx Werte mal das Format Float16 oder Float32 oder cursor (1 Byte)
+>    Steuercode (binär): 0Fxxxxxx 6 Bits Anzahl  F:0:Float32, F:1:Float16 xxxxxx: Anzahl Werte (0,1-31) folgend, bei 0: cursor folgt
+>    Die Floats werden als "Big Endian" (IEEE 754) im übertragen und können alternativ auch einen Fehlercode darstellen
+>    
+>    Steuercode (binär): 1xxxxxxxx 7 Bits Maske leitet HK-Kanäle ein. HK beginnt immer bei 90, ggfs. wird der cursor hochgesetzt
+>    Jedes Maksenbit steht für einen Kanal 1: enthalten, 0: überspringen. Die HK-Kanäle werden immer als Float16 übertragen.
 
 ---
 
