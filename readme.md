@@ -21,7 +21,7 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 - **Strukturierte Messwerte als Array**, erleichtert die automatisierte Verarbeitung.
 - **Werte mit Einheiten**, die Einheiten der Sensoren werden ggf. übertragen
 - **Klartext-Fehlermeldungen**, z. B. bei Sensorausfällen.
-- **Trennung von Messwerten und Systemdaten** (*Housekeeping-Werte* wie z.B. Batteriespannung).
+- **Trennung von Messwerten und Systemdaten** (*Housekeeping-Werte (HK)* wie z.B. Batteriespannung).
 - **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
 
 ---
@@ -95,9 +95,9 @@ Kompakte Darstellung:
 >     16: Messwerte anbei
 >
 >   Untere 4 Bits als Zahl: Grund der Übertragung
->      1: Automatische Übertragung
+>      2: Automatische Übertragung
 >      3: Übertragung wurde manuell ausgelöst
->      5: wie 3 aber explizit nur Übertragung per LoRa
+>      andere: reserviert
 >
 > - Restliche Bytes (die Variable 'cursor' enthält den aktuellen Kanal (0-89, >= 90, startet bei 0)). 
 >   Messwerte sind die Kanäle 0-89, >= 90-9 sind HK-Kanäle:

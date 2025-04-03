@@ -40,8 +40,8 @@ function ltxDecode(indata, port) {
     if (flags & 16) decoded.flags += "(Measure)";
 
     const reason = flags & 15;
-    if (reason === 1) decoded.reason = "(Auto)";
-    else if (reason === 3 || reason === 5) decoded.reason = "(Manual)"; 
+    if (reason === 2) decoded.reason = "(Auto)";
+    else if (reason === 3) decoded.reason = "(Manual)"; 
     else decoded.reason = `(Reason:${reason}?)`;
 
     // Channels:0..89, HK:90..99(max 127) - Decoder V1.x does not care extended itoks >= 128!
