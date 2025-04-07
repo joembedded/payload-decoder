@@ -137,6 +137,11 @@ Mehr Infos zu QuickJS:
 
 ---
 
+## Installation und Test - Elixir
+
+Der Decoder ist in der selben Version auch in Elixir enthalten (`payload_ltx.exs`).
+
+
 ## Testen des Decoders
 
 - **Im Chrome-Debugger:** Datei `index.html` öffnen.

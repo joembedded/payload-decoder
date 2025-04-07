@@ -23,7 +23,7 @@ Only where higher resolution is explicitly required 32-bit floating point number
 
 ---
 
-## Installation and Testing
+## Installation and Testing - JavaScript
 
 The decoder (`payload_ltx.js`) includes an integrated **test routine**, which can be executed in the browser or in the console. For use in Chirpstack or TTN, the **test section must be removed** (up to `--- TEST-CONSOLE ---`).
 
@@ -106,6 +106,11 @@ Compact representation:
 >    Each mask bit represents a channel: 1: included, 0: skipped. HK channels are always transmitted as Float16.
 
 ---
+
+## Installation and Testing - Elixir
+
+The decoder (`payload_ltx.exs`) is the Elixir version.
+
 
 ## Further Information
 
