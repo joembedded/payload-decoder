@@ -1,6 +1,11 @@
 # LTX Chirpstack Payload Decoder in Elixir
 # V1.12 (C) JoEmbedded.de
 
+# ***ACHTUNG*** 08.04.2024: Parser läuft lokal exakt und wurde
+# auf minimalen Sprachstandard reduziert.
+# Auf Zielsystem (ELEMENT IoT) allerdings noch nicht lauffähig!
+
+#
 # Info:
 # - 'parse(data,meta)': 'meta' erwartet integer ('fPort') oder setzt den als 1
 # - ELEMENT IoT erwartet 'use Platform.Parsing.Behaviour'
