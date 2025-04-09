@@ -1,4 +1,4 @@
-# Chirpstack LTX Payload Decoder
+# LTX Payload Decoder
 
 ## Overview
 

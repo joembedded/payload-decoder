@@ -1,32 +1,24 @@
-/* LTX Chirpstack Payload Decoder 
+/* LTX  Payload Decoder 
 * V1.12 (C) JoEmbedded.de 
 * LTX uses a flexible, compressed format, see LTX-Documentation
 * using FLoat32 and Float16 on fPort 1-199 */
 
-function decodeUplink(input) { // assume inpu is valid
+function decodeUplink(input) { // assume input is valid
     if ((input.fPort > 0) && (input.fPort < 200)) {
         // fPort 1-199: LTX Standard-Uplink, Port defines 'known types'
-        return { data: ltxDecode(input.bytes, input.fPort) }
+        return { data: Decoder(input.bytes, input.fPort) }
     } else {
         return { data: { error: `LTX: fPort:${input.fPort} unknown` } };
     }
 }
 
-// List of 'known types' with (opt. repeatet) units - LTX-Sensors
-const deftypes = {
-    // 1-9 frei fuer 'Nix' oder Custom
-    10: ['°C'], // 10: All channels are Temperatures
-    11: ['%rH', '°C'], // 11: rH/T-Sensor
-    12: ['Bar', '°C'], // 12: Pressure/Level Sensor Bar
-    13: ['m', '°C'], // 13: Level Sensor m
-    14: ['m', 'dBm'], // 14: Distance(s) Sensor (Radar)
-}
-
-function ltxDecode(indata, port) {
+function Decoder(indata, port) {
     const decoded = {};
     // Byte 0: Hello-Flags for FLAGS and REASON
     let ianz = indata.length;
     if (ianz < 1) return { error: "LTX: Payload len < 1" };
+    if (port < 1 || port > 199) return { error: `LTX: port:${port} unknown` };
+
     // Transfer input bytes to BinaryArray
     const view = new DataView(new ArrayBuffer(ianz));
     let cursor = 0;
@@ -41,7 +33,7 @@ function ltxDecode(indata, port) {
 
     const reason = flags & 15;
     if (reason === 2) decoded.reason = "(Auto)";
-    else if (reason === 3) decoded.reason = "(Manual)"; 
+    else if (reason === 3) decoded.reason = "(Manual)";
     else decoded.reason = `(Reason:${reason}?)`;
 
     // Channels:0..89, HK:90..99(max 127) - Decoder V1.x does not care extended itoks >= 128!
@@ -108,6 +100,16 @@ function ltxDecode(indata, port) {
     }
     return decoded;
 }
+// List of 'known types' with (opt. repeatet) units - LTX-Sensors
+const deftypes = {
+    // 1-9 frei fuer 'Nix' oder Custom
+    10: ['°C'], // 10: All channels are Temperatures
+    11: ['%rH', '°C'], // 11: rH/T-Sensor
+    12: ['Bar', '°C'], // 12: Pressure/Level Sensor Bar
+    13: ['m', '°C'], // 13: Level Sensor m
+    14: ['m', 'dBm'], // 14: Distance(s) Sensor (Radar)
+}
+
 // descHK - Unit and Description of HK-Channels
 function unitDescrHK(ichan) {
     switch (ichan) {
