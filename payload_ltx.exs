@@ -1,17 +1,21 @@
-# LTX Chirpstack Payload Decoder in Elixir
+# LTX Chirpstack Payload Decoder in Elixir auf ELEMENT IoT
 # V1.12 (C) JoEmbedded.de
 
-# ***ACHTUNG*** 08.04.2024: Parser läuft lokal exakt und wurde
+# *** ACHTUNG *** 08.04.2024: Parser läuft lokal exakt und wurde
 # auf minimalen Sprachstandard reduziert.
 # Auf Zielsystem (ELEMENT IoT) allerdings noch nicht lauffähig!
+# Speichern des Parsers lediglich mit Meldung "Speichern nicht möglich" kommentiert???
+# Aktionen vor Speichern:
+# - 'use Platform.Parsing.Behaviour' einkommentieren
+# - Letzte Zeile 'LTX.Decoder.main()' auskommentieren
 
 #
 # Info:
-# - 'parse(data,meta)': 'meta' erwartet integer ('fPort') oder setzt den als 1
 # - ELEMENT IoT erwartet 'use Platform.Parsing.Behaviour'
 # - ELEMENT IoT sagt "Kann Parser nicht speichern"...
 
 defmodule LTX.Decoder do
+  ## --- ENABLE fuer ELEMENTS IoT:
   # use Platform.Parsing.Behaviour
   import Bitwise
 
@@ -53,18 +57,17 @@ defmodule LTX.Decoder do
   end
 
   # Dekodiert einen Payload (als Binärdaten) anhand des angegebenen Ports.
-  def parse(<<flags, rest::binary>> = _payload, fPort) do
-    # Wenn fPort kein Integer ist, setze ihn auf 1
-    fPort = if is_integer(fPort), do: fPort, else: 1
+  def parse(<<flags, rest::binary>> = _payload, meta) do
+    %{meta: %{frame_port: fPort}} = meta
 
     # Grund für die Übertragung bestimmen
     reason =
       (flags &&& 0x0F)
       |> case do
-           2 -> "(Auto)"
-           3 -> "(Manual)"
-           r -> "(Reason:#{r}?)"
-         end
+        2 -> "(Auto)"
+        3 -> "(Manual)"
+        r -> "(Reason:#{r}?)"
+      end
 
     # Flags extrahieren
     flag_str =
@@ -103,6 +106,7 @@ defmodule LTX.Decoder do
         case rest do
           <<new_chan, tail::binary>> ->
             decode_channels(tail, %{state | chan: new_chan})
+
           _ ->
             {state, <<>>}
         end
@@ -129,6 +133,7 @@ defmodule LTX.Decoder do
 
   defp decode_floats32(<<f::32-float, rest::binary>>, n, state) when n > 0 do
     unit = Enum.at(state.units, rem(state.dtidx, max(length(state.units), 1)))
+
     entry = %{
       channel: state.chan,
       value: Float.round(f, 6),
@@ -152,7 +157,7 @@ defmodule LTX.Decoder do
     val = decode_float16(u16)
 
     entry =
-      if (u16 >>> 10) == 0x3F do
+      if u16 >>> 10 == 0x3F do
         %{
           channel: state.chan,
           msg: ltx_error(u16 &&& 0x03FF),
@@ -184,7 +189,7 @@ defmodule LTX.Decoder do
     val = decode_float16(u16)
 
     entry =
-      if (u16 >>> 10) == 0x3F do
+      if u16 >>> 10 == 0x3F do
         %{
           channel: state.chan,
           msg: ltx_error(u16 &&& 0x03FF),
@@ -211,31 +216,33 @@ defmodule LTX.Decoder do
   # Hilfsfunktion: Dekodierung eines 16-Bit-Werts in einen Float
   defp decode_float16(raw) do
     sign = if((raw &&& 0x8000) != 0, do: -1, else: 1)
-    exponent = (raw >>> 10) &&& 0x1F
+    exponent = raw >>> 10 &&& 0x1F
     fraction = raw &&& 0x03FF
 
     cond do
       exponent == 0 ->
         sign * :math.pow(2, -14) * (fraction / :math.pow(2, 10))
+
       exponent == 0x1F ->
         :infinity
+
       true ->
         sign * :math.pow(2, exponent - 15) * (1 + fraction / :math.pow(2, 10))
     end
   end
 
-  ## ----------------- TEST-CONSOLE, for Chirpstack remove the following block and  final 'LTX.Decoder.main()' -----------------
-  def test_decoder(hexstring, fPort \\ 11) do
+  ## ----------------- TEST-CONSOLE -----------------
+  def test_decoder(hexstring, meta) do
     hexstring
     |> String.replace(~r/\s+/, "")
     |> String.codepoints()
     |> Enum.chunk_every(2)
     |> Enum.map(fn
-         [a, b] -> String.to_integer(a <> b, 16)
-         _ -> 0
-       end)
+      [a, b] -> String.to_integer(a <> b, 16)
+      _ -> 0
+    end)
     |> :binary.list_to_bin()
-    |> parse(fPort)
+    |> parse(meta)
   end
 
   # Hauptfunktion für Tests
@@ -247,12 +254,15 @@ defmodule LTX.Decoder do
       "7242FC02FC0201FF800002884479"
     ]
     |> Enum.each(fn msg ->
-         IO.puts("Test Payload: #{msg}")
-         msg
-         |> test_decoder()
-         |> IO.inspect(label: "Decoded Result")
-       end)
+      testport = 11
+      IO.puts("Test Payload: #{msg} Port: #{testport}")
+
+      msg
+      |> test_decoder(%{meta: %{frame_port: testport}})
+      |> IO.inspect(label: "Decoded Result")
+    end)
   end
 end
 
+## --- DISABLE fuer ELEMENTS IoT:
 LTX.Decoder.main()
