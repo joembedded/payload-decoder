@@ -1,4 +1,4 @@
-# LTX Chirpstack Payload Decoder in Elixir auf ELEMENT IoT
+# LTX Payload Decoder in Elixir auf ELEMENT IoT
 # V1.12 (C) JoEmbedded.de
 
 # *** ACHTUNG *** 08.04.2024: Parser läuft lokal exakt und wurde
@@ -7,14 +7,14 @@
 # Speichern des Parsers lediglich mit Meldung "Speichern nicht möglich" kommentiert???
 # Aktionen vor Speichern:
 # - 'use Platform.Parsing.Behaviour' einkommentieren
-# - Letzte Zeile 'LTX.Decoder.main()' auskommentieren
+# - Letzte Zeile 'Parser.main()' auskommentieren
 
 #
 # Info:
 # - ELEMENT IoT erwartet 'use Platform.Parsing.Behaviour'
 # - ELEMENT IoT sagt "Kann Parser nicht speichern"...
 
-defmodule LTX.Decoder do
+defmodule Parser do
   ## --- ENABLE fuer ELEMENTS IoT:
   # use Platform.Parsing.Behaviour
   import Bitwise
@@ -265,4 +265,4 @@ defmodule LTX.Decoder do
 end
 
 ## --- DISABLE fuer ELEMENTS IoT:
-LTX.Decoder.main()
+Parser.main()
