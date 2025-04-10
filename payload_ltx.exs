@@ -8,6 +8,8 @@
 # Aktionen vor Speichern:
 # - 'use Platform.Parsing.Behaviour' einkommentieren
 # - Letzte Zeile 'Parser.main()' auskommentieren
+# - Problem wohl Zugriff auf geschachtelte Strukturen: https://docs.element-iot.com/parsers/tutorial-de/#lokale-entwicklung
+#   nur via get/3 des Platform.io moeglich. ***todo**
 
 #
 # Info:
