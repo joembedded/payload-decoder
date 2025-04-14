@@ -1,6 +1,7 @@
 # Chirpstack LTX Payload Decoder
 
 ## Überblick
+[English Version](./readme.md) 🇬🇧 
 
 Payload-Decoder gelten oft als kompliziert – und das nicht ohne Grund. In der Welt von LoRaWAN zählt jedes Byte, denn der Energieverbrauch steigt mit der Länge der übertragenen Daten. Ziel ist es daher, mit minimalem Speicheraufwand möglichst viele Informationen zu transportieren. Doch die Vielzahl an Umrechnungsverfahren und das Fehlen standardisierter Fehlermeldungen machen die Dekodierung oft unübersichtlich und fehleranfällig.  
 
@@ -139,7 +140,7 @@ Mehr Infos zu QuickJS:
 
 ## Installation und Test - Elixir
 
-Der Decoder ist in der selben Version auch in Elixir enthalten (`payload_ltx.exs`).
+Der Decoder ist in der selben Version auch in Elixir enthalten (`payload_ltx.exs`). Er wurde haupsächlich entwickelt für die ELEMENT IoT.Plattform.
 
 
 ## Testen des Decoders

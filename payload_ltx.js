@@ -1,5 +1,6 @@
 /* LTX  Payload Decoder 
-* V1.12 (C) JoEmbedded.de 
+* V1.15 (C) JoEmbedded.de 
+* https://github.com/joembedded/chirpstack-payload-decoder
 * LTX uses a flexible, compressed format, see LTX-Documentation
 * using FLoat32 and Float16 on fPort 1-199 */
 
@@ -41,13 +42,13 @@ function Decoder(indata, port) {
     const typeunits = deftypes[port]
     let dtidx = 0;  // Index in deftypes
     decoded.chans = [];
-    while (ianz-- > 0 && ichan < 127) {
+    while (ianz-- > 0 && ichan < 128) {
         const itok = view.getUint8(cursor++);
         if (!(itok & 128)) {
             let cmanz = itok & 63; // Channels: number of consecutive values
             if (!cmanz) {   // cmanz=0: New channel following
                 if (ianz < 1) return { error: "LTX: Format(1) invalid" };
-                ichan = view.getUint8(cursor++);
+                ichan = view.getUint8(cursor++); // AutoEnd for ichan >= 128
                 ianz--;
                 break;
             }
@@ -80,9 +81,8 @@ function Decoder(indata, port) {
             }
         } else { // HK, channels 90.. 
             if (ichan < 90) ichan = 90;
-            let cbits = itok & 63; // HK: bitmask of consecutive values
-            if (!cbits) break;   // > V1.0 - extended itoks (>=128) might follow
-            while (cbits) {
+            let cbits = itok & 127; // HK: 7-bit mask of consecutive values
+            for(let i=0;i<7;i++){
                 if (cbits & 1) {
                     if (ianz < 2) return { error: "LTX: Format(4) invalid Data" };
                     const puob = { channel: ichan, prec: "F16", unit: unitDescrHK(ichan) };
@@ -100,9 +100,9 @@ function Decoder(indata, port) {
     }
     return decoded;
 }
-// List of 'known types' with (opt. repeatet) units - LTX-Sensors
+// List of 'known types' with (opt. repeated) units - LTX-Sensors
 const deftypes = {
-    // 1-9 frei fuer 'Nix' oder Custom
+    // 1-9 free or for  custom sensors
     10: ['°C'], // 10: All channels are Temperatures
     11: ['%rH', '°C'], // 11: rH/T-Sensor
     12: ['Bar', '°C'], // 12: Pressure/Level Sensor Bar
@@ -149,13 +149,13 @@ if (!DataView.prototype.getFloat16) {
 
 //----------------- TEST-CONSOLE, for Chirpstack remove the following parts: -----------------
 // helper to pass test data to/from decoder
-function testDecoder(hexString) {
+function testDecoder(hexString, port) {
     const msg = hexString.replace(/\s/g, '');
     testBytes = [];
     for (let i = 0; i < msg.length; i += 2) {
         testBytes.push(parseInt(msg.substring(i, i + 2), 16));
     }
-    const theObject = decodeUplink({ fPort: 11, bytes: testBytes });
+    const theObject = decodeUplink({ fPort: port, bytes: testBytes });
     return JSON.stringify(theObject, null, 2);
 }
 
@@ -168,13 +168,14 @@ function main() {
         "13 01 41A4E148  9F 42A3 4DA8 5172 2B3F 63E8", // Manual, Value: 20.610001, HKs: 3.31836(V), 22.6250(°C), 43.5625(%), 0.0566101(mAh), 1012.00(mBar)
         "12 42 4D24 4CE4 01 41948F5C 88 355B", // Auto 2 Values(F16): 20.5625, 19.5625, Value(F32): 18.570000 , HK: 0.334717(mAh)
         "7242FC02FC0201FF800002884479", // Alarm, Auto, 3 Values: 'No Reply', HK: 4.47266(mAH)
-    ]; 1
+    ]; 
+    const testport = 11
 
     testmsg.forEach(e => {
         console.log("----Test-Payload:-----");
-        console.log(e);
+        console.log(e, " Port:", testport);
         console.log("----JSON Result:-----");
-        console.log(testDecoder(e));
+        console.log(testDecoder(e, testport));
     })
 }
 
