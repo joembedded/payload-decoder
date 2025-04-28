@@ -1,4 +1,4 @@
-# LTX Payload Decoder
+# LTX Payload Decoder (for Chirpstack et al.)
 
 ## Overview
 -> Jump to: [German Version](./readme_de.md) 

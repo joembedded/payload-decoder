@@ -1,6 +1,6 @@
 # LTX Payload Decoder in Elixir auf ELEMENT IoT
 # V1.15 (C) JoEmbedded.de
-# https://github.com/joembedded/chirpstack-payload-decoder
+# https://github.com/joembedded/payload-decoder
 
 # Aktionen vor Speichern fuer ELEMENT IoT
 # - 'use Platform.Parsing.Behaviour' einkommentieren

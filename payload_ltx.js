@@ -1,9 +1,10 @@
 /* LTX  Payload Decoder 
-* V1.15 (C) JoEmbedded.de 
-* https://github.com/joembedded/chirpstack-payload-decoder
+* V1.16 (C) JoEmbedded.de 
+* https://github.com/joembedded/payload-decoder
 * LTX uses a flexible, compressed format, see LTX-Documentation
 * using FLoat32 and Float16 on fPort 1-199 */
 
+// Chirpstack V4
 function decodeUplink(input) { // assume input is valid
     if ((input.fPort > 0) && (input.fPort < 200)) {
         // fPort 1-199: LTX Standard-Uplink, Port defines 'known types'
@@ -13,17 +14,18 @@ function decodeUplink(input) { // assume input is valid
     }
 }
 
-function Decoder(indata, port) {
+// The Things Network
+function Decoder(bytes, port) {
     const decoded = {};
     // Byte 0: Hello-Flags for FLAGS and REASON
-    let ianz = indata.length;
+    let ianz = bytes.length;
     if (ianz < 1) return { error: "LTX: Payload len < 1" };
     if (port < 1 || port > 199) return { error: `LTX: port:${port} unknown` };
 
     // Transfer input bytes to BinaryArray
     const view = new DataView(new ArrayBuffer(ianz));
     let cursor = 0;
-    indata.forEach((b, i) => view.setUint8(i, b));
+    bytes.forEach((b, i) => view.setUint8(i, b));
     const flags = view.getUint8(cursor++);
     ianz--;
     decoded.flags = "";
