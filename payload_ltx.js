@@ -1,16 +1,20 @@
-/* LTX  Payload Decoder 
+/* LTX  Payload Decoder (Uplink)
 * V1.16 (C) JoEmbedded.de 
 * https://github.com/joembedded/payload-decoder
 * LTX uses a flexible, compressed format, see LTX-Documentation
-* using FLoat32 and Float16 on fPort 1-199 */
+* using FLoat32 and Float16 on fPort 1-199 (fPort sets the 'units')
+*
+* Installation (ChirpStack and TTN):
+* - Remove block 'TEST-CONSOLE'
+*/
 
-// Chirpstack V4
+// ChirpStack V4
 function decodeUplink(input) { // assume input is valid
     if ((input.fPort > 0) && (input.fPort < 200)) {
         // fPort 1-199: LTX Standard-Uplink, Port defines 'known types'
         return { data: Decoder(input.bytes, input.fPort) }
     } else {
-        return { data: { error: `LTX: fPort:${input.fPort} unknown` } };
+        return { data: { errors: [`LTX: fPort:${input.fPort} unknown`] } };
     }
 }
 
@@ -19,8 +23,8 @@ function Decoder(bytes, port) {
     const decoded = {};
     // Byte 0: Hello-Flags for FLAGS and REASON
     let ianz = bytes.length;
-    if (ianz < 1) return { error: "LTX: Payload len < 1" };
-    if (port < 1 || port > 199) return { error: `LTX: port:${port} unknown` };
+    if (ianz < 1) return { errors: ["LTX: Payload len < 1"] };
+    if (port < 1 || port > 199) return { errors: [`LTX: fPort:${port} unknown`] };
 
     // Transfer input bytes to BinaryArray
     const view = new DataView(new ArrayBuffer(ianz));
@@ -49,7 +53,7 @@ function Decoder(bytes, port) {
         if (!(itok & 128)) {
             let cmanz = itok & 63; // Channels: number of consecutive values
             if (!cmanz) {   // cmanz=0: New channel following
-                if (ianz < 1) return { error: "LTX: Format(1) invalid" };
+                if (ianz < 1) return { errors: ["LTX: Format(1) invalid"] };
                 ichan = view.getUint8(cursor++); // AutoEnd for ichan >= 128
                 ianz--;
                 break;
@@ -61,7 +65,7 @@ function Decoder(bytes, port) {
                     puob.unit = typeunits[dtidx % (typeunits.length)];
                 }
                 if (!f16) { // Following cmanz Float32
-                    if (ianz < 4) return { error: "LTX: Format(2) invalid" };
+                    if (ianz < 4) return { errors: ["LTX: Format(2) invalid"] };
                     puob.prec = "F32";
                     const u32 = view.getUint32(cursor, false); // Get Float32-Bits
                     if ((u32 >>> 23) == 0x1FF) puob.msg = getLTXError(u32 & 0x7FFFFF);
@@ -69,7 +73,7 @@ function Decoder(bytes, port) {
                     cursor += 4;
                     ianz -= 4;
                 } else { // Following cmanz Float16
-                    if (ianz < 2) return { error: "LTX: Format(3) invalid" };
+                    if (ianz < 2) return { errors: ["LTX: Format(3) invalid"] };
                     puob.prec = "F16";
                     const u16 = view.getUint16(cursor, false); // Get Float16-Bits
                     if ((u16 >>> 10) == 0x3F) puob.msg = getLTXError(u16 & 1023);
@@ -86,7 +90,7 @@ function Decoder(bytes, port) {
             let cbits = itok & 127; // HK: 7-bit mask of consecutive values
             for(let i=0;i<7;i++){
                 if (cbits & 1) {
-                    if (ianz < 2) return { error: "LTX: Format(4) invalid Data" };
+                    if (ianz < 2) return { errors: ["LTX: Format(4) invalid Data"] };
                     const puob = { channel: ichan, prec: "F16", unit: unitDescrHK(ichan) };
                     const u16 = view.getUint16(cursor, false); // Get Float16-Bits
                     if ((u16 >>> 10) == 0x3F) puob.msg = getLTXError(u16 & 1023);
@@ -110,6 +114,7 @@ const deftypes = {
     12: ['Bar', '°C'], // 12: Pressure/Level Sensor Bar
     13: ['m', '°C'], // 13: Level Sensor m
     14: ['m', 'dBm'], // 14: Distance(s) Sensor (Radar)
+    15: ['°C', 'uS/cm'], // 15: Water Conductivity (ES-2)
 }
 
 // descHK - Unit and Description of HK-Channels
@@ -149,7 +154,7 @@ if (!DataView.prototype.getFloat16) {
     };
 }
 
-//----------------- TEST-CONSOLE, for Chirpstack remove the following parts: -----------------
+//----------------- TEST-CONSOLE, for TTN / ChirpStack remove the following parts: -----------------
 // helper to pass test data to/from decoder
 function testDecoder(hexString, port) {
     const msg = hexString.replace(/\s/g, '');

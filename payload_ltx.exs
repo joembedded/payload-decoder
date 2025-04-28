@@ -1,13 +1,13 @@
-# LTX Payload Decoder in Elixir auf ELEMENT IoT
-# V1.15 (C) JoEmbedded.de
+# LTX Payload Decoder (Uplink) in Elixir auf ELEMENT IoT
+# V1.16 (C) JoEmbedded.de
 # https://github.com/joembedded/payload-decoder
 
 # Aktionen vor Speichern fuer ELEMENT IoT
 # - 'use Platform.Parsing.Behaviour' einkommentieren
-# - Block zwischen ...TEST_START und ...TEST_END entfneren
+# - Block zwischen ...TEST_START und ...TEST_END entfetneen
 # - Letzte Zeile 'Parser.main()' auskommentieren
 #
-# ELEMENT IoT verweigert das Speichern des Parsers ohne genaue Angaben,
+# ELEMENT IoT verweigert das Speichern des Parsers ohne irgendwelche Angaben,
 # sofern IO. etc. vorhanden ist. Auch verweidgert ELEMENT viele
 # Sprachkonstrikte, z.B. divese map-Operationen... Die Liste ist lang...
 
@@ -179,6 +179,7 @@ defmodule Parser do
         12 -> ["Bar", "°C"]
         13 -> ["m", "°C"]
         14 -> ["m", "dBm"]
+        15 -> ["°C", "uS/cm"]
         _ -> ["(nn)"]  # not known
       end
 
