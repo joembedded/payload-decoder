@@ -21,16 +21,17 @@ Only where higher resolution is explicitly required 32-bit floating point number
 - **Plain-text error messages**, e.g. for sensor errors.
 - **Separation of measurement values and system data** (*housekeeping values (HK)* such as battery voltage).
 - **Minimal storage requirement**, optimized for LoRaWAN or satellite communication.
+- **Upload and Download** possible. Download e.g. for remote commands and configuration.
 
 ---
 
 ## Installation and Testing - JavaScript
 
-The decoder (`payload_ltx.js`) includes an integrated **test routine**, which can be executed in the browser or in the console. For use in Chirpstack or TTN, the **test section must be removed** (up to `--- TEST-CONSOLE ---`).
+The decoder (`payload_ltx.js`) includes an integrated **test routine**, which can be executed in the browser or in the console. For use in ChirpStack or TTN, the **test section must be removed** (up to `--- TEST-CONSOLE ---`).
 
-Then, simply save this upper part as a **CODEC** in Chirpstack (or TTN).
+Then, simply save this upper part as a **CODEC** in ChirpStack (or TTN).
 
-- **Error Messages:** Chirpstack automatically generates `ERROR` events for runtime errors.
+- **Error Messages:** ChirpStack automatically generates `ERROR` events for runtime errors.
 
 ---
 
@@ -117,12 +118,13 @@ The decoder (`payload_ltx.exs`) is the Elixir version (mainly developed for ELEM
 
 The **LTX Payload Decoder** is compatible with common LoRaWAN stacks and can be tested directly in the **browser debugger console**.
 
-- **Chirpstack:** Uses *QuickJS* internally for decoding.
+- **ChirpStack:** Uses *QuickJS* internally for decoding.
 - **QuickJS:** Lightweight JavaScript interpreter, runs on Windows, Linux & macOS.
 - **Testing with QuickJS:**
   ```bash
   ./qjs payload_ltx.js
   ```
+  - **Info:** Remove block after `--- TEST-CONSOLE ---` before copying into ChirpStack (or TTN).
 
 More information about QuickJS:
 - [QuickJS Website](https://bellard.org/quickjs/)

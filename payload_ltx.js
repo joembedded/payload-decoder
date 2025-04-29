@@ -45,7 +45,7 @@ function Decoder(bytes, port) {
 
     // Channels:0..89, HK:90..99(max 127) - Decoder V1.x does not care extended itoks >= 128!
     let ichan = 0;
-    const typeunits = deftypes[port]
+    const typeunits = deftypes[port];
     let dtidx = 0;  // Index in deftypes
     decoded.chans = [];
     while (ianz-- > 0 && ichan < 128) {
@@ -61,7 +61,7 @@ function Decoder(bytes, port) {
             const f16 = itok & 64;
             while (cmanz-- > 0) {
                 const puob = { channel: ichan };
-                if (typeunits?.length > 0) { // Known Type with units
+                if (typeunits.length > 0) { // Known Type with units
                     puob.unit = typeunits[dtidx % (typeunits.length)];
                 }
                 if (!f16) { // Following cmanz Float32
@@ -115,7 +115,7 @@ const deftypes = {
     13: ['m', '°C'], // 13: Level Sensor m
     14: ['m', 'dBm'], // 14: Distance(s) Sensor (Radar)
     15: ['°C', 'uS/cm'], // 15: Water Conductivity (ES-2)
-}
+};
 
 // descHK - Unit and Description of HK-Channels
 function unitDescrHK(ichan) {

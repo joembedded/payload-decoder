@@ -24,16 +24,17 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 - **Klartext-Fehlermeldungen**, z. B. bei Sensorausfällen.
 - **Trennung von Messwerten und Systemdaten** (*Housekeeping-Werte (HK)* wie z.B. Batteriespannung).
 - **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
+- **Upload und Download** möglich. Download z.B. für Serverseitige Konfiguration oder Kommandos.
 
 ---
 
 ## Installation und Test
 
-Der Decoder (`payload_ltx.js`) enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in Chirpstack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
+Der Decoder (`payload_ltx.js`) enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in ChirpStack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
 
-Dann einfach diesen oberen Teil als **CODEC** im Chirpstack (oder auch TTN) abspeichern.
+Dann einfach diesen oberen Teil als **CODEC** im ChirpStack (oder auch TTN) abspeichern.
 
-- **Fehlermeldungen:** Chirpstack generiert automatisch `ERROR`-Events bei Laufzeitfehlern.
+- **Fehlermeldungen:** ChirpStack generiert automatisch `ERROR`-Events bei Laufzeitfehlern.
 
 ---
 
@@ -116,7 +117,7 @@ Kompakte Darstellung:
 
 Der **LTX Payload Decoder** ist kompatibel mit gängigen LoRaWAN-Stacks und kann direkt in der **Browser-Debugger-Konsole** getestet werden.
 
-- **Chirpstack:** Nutzt intern *QuickJS* für die Decodierung.
+- **ChirpStack:** Nutzt intern *QuickJS* für die Decodierung.
 - **QuickJS:** Leichtgewichtiger JavaScript-Interpreter, lauffähig unter Windows, Linux & macOS.
 - **Testen mit QuickJS:**
   ```bash
@@ -150,7 +151,7 @@ Der Decoder ist in der selben Version auch in Elixir enthalten (`payload_ltx.exs
   ```bash
   ./qjs payload_ltx.js
   ```
-- **Hinweis:** Testbereich (bis `--- TEST-CONSOLE ---`) vor dem Einsatz in Chirpstack (oder auch TTN) entfernen.
+- **Hinweis:** Testbereich (bis `--- TEST-CONSOLE ---`) vor dem Einsatz in ChirpStack (oder auch TTN) entfernen.
 
 ---
 
