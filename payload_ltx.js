@@ -61,7 +61,7 @@ function Decoder(bytes, port) {
             const f16 = itok & 64;
             while (cmanz-- > 0) {
                 const puob = { channel: ichan };
-                if (typeunits.length > 0) { // Known Type with units
+                if (typeunits && typeunits.length && typeunits.length > 0) { // Known Type with units
                     puob.unit = typeunits[dtidx % (typeunits.length)];
                 }
                 if (!f16) { // Following cmanz Float32
@@ -176,7 +176,7 @@ function main() {
         "12 42 4D24 4CE4 01 41948F5C 88 355B", // Auto 2 Values(F16): 20.5625, 19.5625, Value(F32): 18.570000 , HK: 0.334717(mAh)
         "7242FC02FC0201FF800002884479", // Alarm, Auto, 3 Values: 'No Reply', HK: 4.47266(mAH)
     ]; 
-    const testport = 11
+    const testport = 1
 
     testmsg.forEach(e => {
         console.log("----Test-Payload:-----");

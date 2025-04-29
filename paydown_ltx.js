@@ -7,10 +7,17 @@
 * - TTN V4 supports 'errors/warnings:[]', Chirpstack V4 currently not
 * - ChirpStack V4 only requires 'encodeDownlink()', but not 'decodeDownlink()'
 * - ChirpStack holds Uplink/Downlink in one file, TTN requires 2 separate files for Uplink/Downlink
+* - From Chirpstack Console it is not possible to use encodeDowblink(), 
+*   it requires plain JSON, e.g. to send 'Test' (***???? TO TEST CONSOLE ?????***)
+*    {
+*    "confirmed": true,
+*    "fPort": 33,
+*    "data": "VGVzdA==""
+*    }
 *
 * Installation:
-* - ChirpStack: copy 'encodeDownlink()' into the common payload decoder
 * - TTN: copy this cruft as downlink payload decoder
+* - ChirpStack: copy 'encodeDownlink()' into the common payload decoder
 */
 
 // TTN V4 / ChirpStack - Downlink Human to Bytes
