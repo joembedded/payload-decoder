@@ -1,4 +1,4 @@
-# LTX Payload Decoder (für Chirpstack, TTN und andere)
+# LTX Payload Decoder (für ChirpStack, TTN und andere)
 
 ## Überblick
 -> Jump to: [English Version](./readme.md) 
