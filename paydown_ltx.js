@@ -23,7 +23,7 @@
 * - ChirpStack: copy 'encodeDownlink()' into the common payload decoder
 */
 
-// TTN V4 / ChirpStack - Downlink Human to Bytes
+// TTN / ChirpStack - Downlink Human to Bytes
 function encodeDownlink(input) {
     const cmd = input.data.cmd;
 
@@ -48,7 +48,7 @@ function encodeDownlink(input) {
     return encodedRes;
 }
 
-// TTN V4 - Downlink (back) Bytes to Human (only informative, for displaying it in the console)
+// TTN only - Downlink (back) Bytes to Human (only informative, for displaying it in the console)
 function decodeDownlink(input) {
     const decodedRes = {};
     if(input.fPort !== 10) decodedRes.errors = [`LTX: fPort:${input.fPort} unknown`];  // LTX General CMD Port: 10

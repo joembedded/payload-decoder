@@ -18,7 +18,7 @@ function decodeUplink(input) { // assume input is valid
     }
 }
 
-// The Things Network
+// TTN / Chirpstack
 function Decoder(bytes, port) {
     const decoded = {};
     // Byte 0: Hello-Flags for FLAGS and REASON
@@ -151,7 +151,7 @@ if (!DataView.prototype.getFloat16) {
         if (exponent === 0) return sign * Math.pow(2, -14) * (fraction / Math.pow(2, 10)); //Subnormal
         else if (exponent === 0x1F) return fraction ? NaN : sign * Infinity; // NaN or Infinity
         return (sign * Math.pow(2, exponent - 15) * (1 + fraction / Math.pow(2, 10))).toPrecision(6);
-    };
+    }
 }
 
 //----------------- TEST-CONSOLE, for TTN / ChirpStack remove the following parts: -----------------
