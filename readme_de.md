@@ -26,13 +26,14 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 - **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
 - **Upload und Download** möglich. Download z.B. für Serverseitige Konfiguration oder Kommandos.
 
-
-Anmerkung zu TTN V3: Die optionale Funktion `normalizeUplink()` ist vorgesehen um unterschiedlich formatierte Daten von verschiednen Sensoren auf ein ähnliches Format zu bringen. Der LTX Payload Decoder benötigt diese aber natürlich nicht.
 ---
 
 ## Installation und Test
 
 Der Decoder (`payload_ltx.js`) enthält eine integrierte **Testroutine**, die im Browser oder in der Konsole ausgeführt werden kann. Für den Einsatz in ChirpStack oder TTN muss der **Testbereich entfernt** werden (bis `--- TEST-CONSOLE ---`).
+
+Anmerkung zu TTN V3: Die optionale Funktion `normalizeUplink()` ist vorgesehen um unterschiedlich formatierte Daten von verschiednen Sensoren auf ein ähnliches Format zu bringen. Der LTX Payload Decoder benötigt diese aber natürlich nicht.
+
 
 Dann einfach diesen oberen Teil als **CODEC** im ChirpStack (oder auch TTN) abspeichern.
 

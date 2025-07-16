@@ -23,13 +23,13 @@ Only where higher resolution is explicitly required 32-bit floating point number
 - **Minimal storage requirement**, optimized for LoRaWAN or satellite communication.
 - **Upload and Download** possible. Download e.g. for remote commands and configuration.
 
-
-Note on TTN V3: The optional function `normalizeUplink()` is intended to bring differently formatted data from various sensors into a similar structure. However, the LTX payload decoder does not require it, of course.
 ---
 
 ## Installation and Testing - JavaScript
 
 The decoder (`payload_ltx.js`) includes an integrated **test routine**, which can be executed in the browser or in the console. For use in ChirpStack or TTN, the **test section must be removed** (up to `--- TEST-CONSOLE ---`).
+
+Note on TTN V3: The optional function `normalizeUplink()` is intended to bring differently formatted data from various sensors into a similar structure. However, the LTX payload decoder does not require it, of course.
 
 Then, simply save this upper part as a **CODEC** in ChirpStack (or TTN).
 
