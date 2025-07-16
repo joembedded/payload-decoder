@@ -23,6 +23,7 @@ Only where higher resolution is explicitly required 32-bit floating point number
 - **Minimal storage requirement**, optimized for LoRaWAN or satellite communication.
 - **Upload and Download** possible. Download e.g. for remote commands and configuration.
 
+Note on TTN V3: The optional function `normalizeUplink()` is intended to bring differently formatted data from various sensors into a similar structure. However, the LTX payload decoder does not require it, of course.
 ---
 
 ## Installation and Testing - JavaScript

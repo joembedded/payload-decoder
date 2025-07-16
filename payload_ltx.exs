@@ -1,5 +1,5 @@
 # LTX Payload Decoder (Uplink) in Elixir auf ELEMENT IoT
-# V1.16 (C) JoEmbedded.de
+# V1.17 (C) JoEmbedded.de
 # https://github.com/joembedded/payload-decoder
 
 # Aktionen vor Speichern fuer ELEMENT IoT
@@ -7,9 +7,13 @@
 # - Block zwischen ...TEST_START und ...TEST_END entfetneen
 # - Letzte Zeile 'Parser.main()' auskommentieren
 #
+# Test: ...\payloaddecoder> elixir payload_ltx.exs
+#
 # ELEMENT IoT verweigert das Speichern des Parsers ohne irgendwelche Angaben,
 # sofern IO. etc. vorhanden ist. Auch verweidgert ELEMENT viele
 # Sprachkonstrikte, z.B. divese map-Operationen... Die Liste ist lang...
+# *todo* Nicht getestet: Wie werden Nicht-Zahlen (:infinity) von ELEMENT IoT
+# behandelt? (Letzter Testrahmen). Bei JS muss das manuell abgefangen werden.
 
 defmodule Parser do
   # use Platform.Parsing.Behaviour
@@ -160,6 +164,7 @@ defmodule Parser do
   # Fehlermeldungen im Klartext in FLoat16/32
   def ltx_error(errno) do
     case errno do
+      0 -> "NumberOverflow" # CodecError
       1 -> "NoValue"
       2 -> "NoReply"
       3 -> "OldValue"
@@ -191,11 +196,11 @@ defmodule Parser do
   # Einheit / Beschreibung HK-Kanaele
   def hk_unit(channel) do
     case channel do
-      90 -> "V (HK_Bat)"
-      91 -> "°C (HK_intTemp)"
-      92 -> "%rH (HK_intHum.)"
-      93 -> "mAh (HK_usedEnergy)"
-      94 -> "mBar (HK_Baro)"
+      90 -> "V(HK_Bat)"
+      91 -> "°C(HK_intTemp)"
+      92 -> "%rH(HK_intHum.)"
+      93 -> "mAh(HK_usedEnergy)"
+      94 -> "mBar(HK_Baro)"
       _ -> "HK_unknown"
     end
   end
@@ -218,7 +223,7 @@ defmodule Parser do
     end
   end
 
-  ## ----------------- TEST-CONSOLE START (entfernen fuer ELEMENTS) -----------------
+  ##REMOVE-START ----------------- TEST-CONSOLE START (entfernen fuer ELEMENTS) -----------------
   def test_decoder(hexstring, meta) do
     hexstring
     |> String.replace(~r/\s+/, "")
@@ -238,7 +243,9 @@ defmodule Parser do
       # "13 01 41A4E148  9F 42A3 4DA8 5172 2B3F 63E8",
       #"130141A4E1489F42A34DA851722B3F63E8",
       #"12 42 4D24 4CE4 01 41948F5C 88 355B",
-      "72 00 11 42 FC02 FC02 01FF800002884479"
+      # "72 00 11 42 FC02 FC02 01FF800002884479"
+      "12585bb0000000003c005c7b72b67c007c005bb05599564456e25784580c586258b558fc594f599c59ee5a3c5a8c5ae45b29" # With INF.16 in Data Chan6 & 7
+
     ]
     |> Enum.each(fn msg ->
       # Testport
@@ -251,8 +258,9 @@ defmodule Parser do
     end)
   end
 
-  ## ----------------- TEST-CONSOLE ENDE (entfernen fuer ELEMENTS) -----------------
+  ##REMOVE-END ----------------- TEST-CONSOLE ENDE (entfernen fuer ELEMENTS) -----------------
 end
 
-## --- (entfernen fuer ELEMENTS):
+##REMOVE-START --- (entfernen fuer ELEMENTS):
 Parser.main()
+##REMOVE-END

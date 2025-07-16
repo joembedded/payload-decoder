@@ -7,7 +7,7 @@ Payload-Decoder gelten oft als kompliziert – und das nicht ohne Grund. In der 
 
 Ein Beispiel: Eine Temperatur lässt sich effizient als 16-Bit-Integer mit Skalierung übertragen. Dasselbe Format könnte auch für eine Batteriespannung genutzt werden – doch hier wäre eine völlig andere Skalierung erforderlich. Einheitliche Fehlercodes lassen sich in solchen festen Formaten kaum umsetzen.  
 
-In der Praxis genügt für viele Messwerte – etwa Temperaturen, Feuchtigkeiten oder Distanzen – eine Genauigkeit von 0,05 %. Die LTX-Logger setzen daher auf 16-Bit-Gleitkommazahlen, um eine einheitliche Darstellung zu gewährleisten. Ein zusätzlicher Vorteil: Fehlercodes lassen sich verlustfrei integrieren, indem der reservierte "NaN"-Bereich von Gleitkommazahlen genutzt wird.  
+In der Praxis genügt für viele Messwerte – etwa Temperaturen, Feuchtigkeiten oder Distanzen – eine Genauigkeit von 0,05 %. Die LTX-Logger setzen daher auf 16-Bit-Gleitkommazahlen, um eine einheitliche Darstellung zu gewährleisten. Ein zusätzlicher Vorteil: Fehlercodes lassen sich verlustfrei integrieren, indem der reservierte "NaN"-Bereich von Gleitkommazahlen genutzt wird. 
 
 Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gleitkommazahlen zum Einsatz. So bleibt die Datenübertragung effizient, ohne auf Präzision zu verzichten.  
 
@@ -26,6 +26,7 @@ Nur dort, wo eine höhere Auflösung explizit erforderlich ist, kommen 32-Bit-Gl
 - **Minimaler Speicherbedarf**, optimiert für LoRaWAN oder Satelliten-Kommunikation 
 - **Upload und Download** möglich. Download z.B. für Serverseitige Konfiguration oder Kommandos.
 
+Anmerkung zu TTN V3: Die optionale Funktion `normalizeUplink()` ist vorgesehen um unterschiedlich formatierte Daten von verschiednen Sensoren auf ein ähnliches Format zu bringen. Der LTX Payload Decoder benötigt diese aber natürlich nicht.
 ---
 
 ## Installation und Test

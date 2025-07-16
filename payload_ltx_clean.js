@@ -1,17 +1,10 @@
+// ---Auto made (./makec.bat)---
 /* LTX  Payload Decoder (Uplink)
 * V1.17 (C) JoEmbedded.de 
 * https://github.com/joembedded/payload-decoder
 * LTX uses a flexible, compressed format, see LTX-Documentation
 * using FLoat32 and Float16 on fPort 1-199 (fPort sets the 'units')
 */
-//REMOVE-START
-/* 
-Installation (ChirpStack and TTN V3:
-* - Remove block 'TEST-CONSOLE'
-* 
-* Test: ...\payloaddecoder> ./qjs payload_ltx.js
-*/
-//REMOVE-END
 
 // ChirpStack V4
 function decodeUplink(input) { // assume input is valid
@@ -170,40 +163,3 @@ if (!DataView.prototype.getFloat16) {
     }
 }
 
-//REMOVE-START ----------------- TEST-CONSOLE, for TTN / ChirpStack remove the following parts: -----------------
-// helper to pass test data to/from decoder
-function testDecoder(hexString, port) {
-    const msg = hexString.replace(/\s/g, '');
-    testBytes = [];
-    for (let i = 0; i < msg.length; i += 2) {
-        testBytes.push(parseInt(msg.substring(i, i + 2), 16));
-    }
-    const theObject = decodeUplink({ fPort: port, bytes: testBytes });
-    return JSON.stringify(theObject, null, 2);
-}
-
-function main() {
-    console.log("---TEST-DECODER---");
-
-    // Test-Payloads (in HEX), may contain spaces for better readability
-    // taken from LTX-INTENT Data Logger (Type 1500) with 1 or 3 SDI-12-Sensors
-    const testmsg = [
-
-        // "13 01 41A4E148  9F 42A3 4DA8 5172 2B3F 63E8", // Manual, Value: 20.610001, HKs: 3.31836(V), 22.6250(°C), 43.5625(%), 0.0566101(mAh), 1012.00(mBar)
-        // "12 42 4D24 4CE4 01 41948F5C 88 355B", // Auto 2 Values(F16): 20.5625, 19.5625, Value(F32): 18.570000 , HK: 0.334717(mAh)
-        // "7242FC02FC0201FF800002884479", // Alarm, Auto, 3 Values: 'No Reply', HK: 4.47266(mAH)
-        // "93585B2F5AE25A965A3A59ED59A0595058FC58B558685813577F56EC5649559F54F45460538C5243511E4F6B4D2E4884BAE4", // Manual,Reset, 24*F16-Values
-        "12585bb0000000003c005c7b72b67c007c005bb05599564456e25784580c586258b558fc594f599c59ee5a3c5a8c5ae45b29" // With INF.16 in Data om Chan 6/7
-    ]; 
-    const testport = 1
-
-    testmsg.forEach(e => {
-        console.log("----Test-Payload:-----");
-        console.log(e, " Port:", testport);
-        console.log("----JSON Result:-----");
-        console.log(testDecoder(e, testport));
-    })
-}
-
-main();
-//REMOVE-END ---
