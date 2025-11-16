@@ -108,6 +108,7 @@ Compact representation:
 >    
 >    Control code (binary): 1xxxxxxxx 7-bit mask introduces HK channels. HK always starts at 90, cursor may be incremented.
 >    Each mask bit represents a channel: 1: included, 0: skipped. HK channels are always transmitted as Float16.
+>    Logically: there can only by max. 2 HK-Blocks: 1.st for channels 90-96, if a 2.nd follow: 97-99: 1xxxzzzz (Bits z are undefined and ignored). Nothing follows the HK Block.
 
 ---
 

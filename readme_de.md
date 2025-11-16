@@ -105,7 +105,7 @@ Kompakte Darstellung:
 >      andere: reserviert
 >
 > - Restliche Bytes (die Variable 'cursor' enthält den aktuellen Kanal (0-89, >= 90, startet bei 0)). 
->   Messwerte sind die Kanäle 0-89, >= 90-9 sind HK-Kanäle:
+>   Messwerte sind die Kanäle 0-89, 90-99 sind HK-Kanäle:
 >   
 >   Blöcke aus 1 Byte Steuercode und 1 - xxxxxx Werte mal das Format Float16 oder Float32 oder cursor (1 Byte)
 >    Steuercode (binär): 0Fxxxxxx 6 Bits Anzahl  F:0:Float32, F:1:Float16 xxxxxx: Anzahl Werte (0,1-31) folgend, bei 0: cursor folgt
@@ -113,6 +113,8 @@ Kompakte Darstellung:
 >    
 >    Steuercode (binär): 1xxxxxxxx 7 Bits Maske leitet HK-Kanäle ein. HK beginnt immer bei 90, ggfs. wird der cursor hochgesetzt
 >    Jedes Maksenbit steht für einen Kanal 1: enthalten, 0: überspringen. Die HK-Kanäle werden immer als Float16 übertragen.
+>    Logisch: Es kann maximal 2 HK-Blöcke geben: 1. Block für Kanäle 90-96, falls ein 2. folgt: 97-99: 1xxxzzzz (Bits z werden sind nicht definiert und werden ignoriert). Nach dem HK-Block darf nichts weiter folgen.
+>    
 
 ---
 
